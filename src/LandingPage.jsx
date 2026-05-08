@@ -228,7 +228,7 @@ function WaitlistForm({ onSuccess }) {
       <div style={{ fontFamily: "var(--fd)", fontSize: 26, fontWeight: 500, marginBottom: 8, color: "var(--ink)" }}>You're on the list!</div>
       <div style={{ fontSize: 14, color: "var(--ink-60)", lineHeight: 1.6, maxWidth: 360, margin: "0 auto" }}>We'll reach out to <strong style={{ color: "var(--ink)" }}>{form.email}</strong> with early access, exclusive pricing, and launch updates.</div>
       <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 18px", background: "var(--gold-p)", borderRadius: 20, fontSize: 13, color: "var(--gold)", fontWeight: 600, border: "1px solid var(--gold-l)" }}>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#27C93F", display: "inline-block" }} />Saved to Supabase
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#27C93F", display: "inline-block" }} />Confirmed
       </div>
     </div>
   );
@@ -242,7 +242,7 @@ function WaitlistForm({ onSuccess }) {
       <button onClick={submit} disabled={status === "loading"} style={{ padding: "15px 24px", background: "var(--ink)", color: "var(--cream)", border: "none", borderRadius: 4, fontFamily: "var(--fb)", fontWeight: 600, fontSize: 15, cursor: status === "loading" ? "not-allowed" : "pointer", opacity: status === "loading" ? .75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "background .2s" }}
         onMouseEnter={e => { if (status !== "loading") e.target.style.background = "#C8924A" }}
         onMouseLeave={e => { if (status !== "loading") e.target.style.background = "var(--ink)" }}>
-        {status === "loading" ? <><div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin .7s linear infinite" }} />Saving to Supabase…</> : "→  Join the Early Access Waitlist"}
+        {status === "loading" ? <><div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin .7s linear infinite" }} />Securing your spot…</> : "→  Join the Early Access Waitlist"}
       </button>
       <div style={{ fontSize: 12, color: "var(--ink-30)", textAlign: "center" }}>No spam. Early members get 40% off at launch — forever.</div>
     </div>
