@@ -1,28 +1,49 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "./supabaseClient";
 
-const SUPABASE_URL = "https://lziacykpvufkqmjxheep.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6aWFjeWtwdnVma3FtanhoZWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzMwNzksImV4cCI6MjA5Mzg0OTA3OX0.TAqjGUZLYJX6TRXmYsc4ZX1bE7ihGa4_njPeCyG6tPk";
-const H = { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
-
+/* ── Supabase helpers ── */
 const sb = {
+  /** Public: insert a new waitlist entry (uses anon role) */
   async insert(row) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, { method: "POST", headers: { ...H, "Prefer": "return=representation" }, body: JSON.stringify(row) });
-    const d = await r.json(); if (!r.ok) throw d; return d[0];
+    const { data, error } = await supabase
+      .from("waitlist")
+      .insert(row)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   },
+  /** Public: check if an email already exists */
   async emailExists(email) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/waitlist?email=ilike.${encodeURIComponent(email)}&select=id`, { headers: H });
-    const d = await r.json(); return Array.isArray(d) && d.length > 0;
+    const { data } = await supabase
+      .from("waitlist")
+      .select("id")
+      .ilike("email", email)
+      .limit(1);
+    return Array.isArray(data) && data.length > 0;
   },
+  /** Admin-only: fetch all entries (requires authenticated admin session) */
   async getAll() {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/waitlist?select=*&order=joined_at.asc`, { headers: H });
-    return r.json();
+    const { data, error } = await supabase
+      .from("waitlist")
+      .select("*")
+      .order("joined_at", { ascending: true });
+    if (error) throw error;
+    return data || [];
   },
+  /** Admin-only: delete all entries (requires authenticated admin session) */
   async deleteAll() {
-    await fetch(`${SUPABASE_URL}/rest/v1/waitlist?id=gte.0`, { method: "DELETE", headers: H });
+    const { error } = await supabase
+      .from("waitlist")
+      .delete()
+      .gte("id", 0);
+    if (error) throw error;
   },
+  /** Public: get waitlist count via secure RPC (no PII exposed) */
   async getCount() {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/waitlist?select=id`, { headers: { ...H, "Prefer": "count=exact", "Range-Unit": "items", "Range": "0-0" } });
-    const cr = r.headers.get("content-range"); return cr ? parseInt(cr.split("/")[1], 10) : 0;
+    const { data, error } = await supabase.rpc("get_waitlist_count");
+    if (error) throw error;
+    return data || 0;
   },
 };
 
@@ -228,34 +249,86 @@ function WaitlistForm({ onSuccess }) {
   );
 }
 
-/* ── ADMIN PANEL ── */
-const ADMIN_PWD = "exfin2026admin";
+/* ── ADMIN PANEL (Supabase Auth) ── */
 function AdminPanel() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [authed, setAuthed] = useState(false);
-  const [pwdInput, setPwdInput] = useState("");
-  const [pwdErr, setPwdErr] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [locked, setLocked] = useState(false);
+  const [session, setSession] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
-  const handleLogin = () => {
-    if (locked) return;
-    if (pwdInput === ADMIN_PWD) { setAuthed(true); }
-    else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setPwdErr(true);
-      setPwdInput("");
-      if (newAttempts >= 5) { setLocked(true); }
+  /* Auth login form state */
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
+
+  /* Listen for auth state changes */
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s) {
+        const role = s.user?.app_metadata?.role;
+        setIsAdmin(role === "admin");
+      }
+      setAuthChecked(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      if (s) {
+        const role = s.user?.app_metadata?.role;
+        setIsAdmin(role === "admin");
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  /* Load data once authenticated as admin */
+  useEffect(() => {
+    if (session && isAdmin) {
+      setLoading(true);
+      sb.getAll()
+        .then(l => { setList(Array.isArray(l) ? l : []); setLoading(false); })
+        .catch(() => setLoading(false));
+    }
+  }, [session, isAdmin]);
+
+  /* Sign in handler */
+  const handleLogin = async (e) => {
+    e?.preventDefault();
+    if (signingIn) return;
+    setSigningIn(true);
+    setAuthError("");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthError(error.message);
+    } catch (err) {
+      setAuthError("An unexpected error occurred.");
+    } finally {
+      setSigningIn(false);
     }
   };
 
-  useEffect(() => {
-    if (authed) sb.getAll().then(l => { setList(Array.isArray(l) ? l : []); setLoading(false); });
-  }, [authed]);
+  /* Sign out handler */
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setIsAdmin(false);
+    setList([]);
+  };
 
-  if (!authed) return (
+  /* Waiting for auth check */
+  if (!authChecked) return (
+    <div style={{ minHeight: "100vh", background: "var(--cream)", fontFamily: "var(--fb)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{FONTS}</style>
+      <div style={{ width: 24, height: 24, border: "2px solid var(--border)", borderTopColor: "var(--gold)", borderRadius: "50%", animation: "spin .7s linear infinite" }} />
+    </div>
+  );
+
+  /* Not authenticated — show Supabase Auth login form */
+  if (!session) return (
     <div style={{ minHeight: "100vh", background: "var(--cream)", fontFamily: "var(--fb)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <style>{FONTS}</style>
       <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 8, padding: 48, width: 380, boxShadow: "var(--sl)" }}>
@@ -266,35 +339,56 @@ function AdminPanel() {
           <span style={{ fontFamily: "var(--fd)", fontWeight: 600, fontSize: 17, color: "var(--ink)" }}>ExFinAnalyze</span>
         </div>
         <div style={{ fontFamily: "var(--fd)", fontSize: 24, fontWeight: 500, marginBottom: 6, color: "var(--ink)" }}>Admin Access</div>
-        <div style={{ fontSize: 13, color: "var(--ink-60)", marginBottom: 24 }}>Enter the admin password to continue.</div>
-        {locked ? (
-          <div style={{ padding: "12px 16px", background: "#FEF2EF", border: "1px solid #F5C5BC", borderRadius: 4, fontSize: 13, color: "var(--warn)" }}>
-            🔒 Too many failed attempts. Access locked.
-          </div>
-        ) : (
-          <>
-            <input
-              type="password" placeholder="Password" value={pwdInput}
-              onChange={e => { setPwdInput(e.target.value); setPwdErr(false); }}
-              onKeyDown={e => e.key === "Enter" && handleLogin()}
-              style={{ width: "100%", padding: "13px 16px", border: `1.5px solid ${pwdErr ? "var(--warn)" : "var(--border)"}`, borderRadius: 4, fontFamily: "var(--fb)", fontSize: 14, outline: "none", marginBottom: 8 }}
-            />
-            {pwdErr && <div style={{ fontSize: 12, color: "var(--warn)", marginBottom: 8 }}>❌ Incorrect password. {5 - attempts} attempts remaining.</div>}
-            <button onClick={handleLogin} style={{ width: "100%", padding: "13px", background: "var(--ink)", color: "var(--cream)", border: "none", borderRadius: 4, fontFamily: "var(--fb)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-              Unlock Admin Panel
-            </button>
-          </>
-        )}
+        <div style={{ fontSize: 13, color: "var(--ink-60)", marginBottom: 24 }}>Sign in with your admin credentials.</div>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email" placeholder="Email" value={email} autoComplete="email"
+            onChange={e => { setEmail(e.target.value); setAuthError(""); }}
+            style={{ width: "100%", padding: "13px 16px", border: `1.5px solid ${authError ? "var(--warn)" : "var(--border)"}`, borderRadius: 4, fontFamily: "var(--fb)", fontSize: 14, outline: "none", marginBottom: 10 }}
+          />
+          <input
+            type="password" placeholder="Password" value={password} autoComplete="current-password"
+            onChange={e => { setPassword(e.target.value); setAuthError(""); }}
+            style={{ width: "100%", padding: "13px 16px", border: `1.5px solid ${authError ? "var(--warn)" : "var(--border)"}`, borderRadius: 4, fontFamily: "var(--fb)", fontSize: 14, outline: "none", marginBottom: 8 }}
+          />
+          {authError && <div style={{ fontSize: 12, color: "var(--warn)", marginBottom: 8 }}>❌ {authError}</div>}
+          <button type="submit" disabled={signingIn} style={{ width: "100%", padding: "13px", background: "var(--ink)", color: "var(--cream)", border: "none", borderRadius: 4, fontFamily: "var(--fb)", fontWeight: 600, fontSize: 14, cursor: signingIn ? "wait" : "pointer", opacity: signingIn ? 0.7 : 1 }}>
+            {signingIn ? "Signing in…" : "Sign In"}
+          </button>
+        </form>
+        <div style={{ fontSize: 11, color: "var(--ink-30)", textAlign: "center", marginTop: 16 }}>Secured by Supabase Auth</div>
       </div>
     </div>
   );
 
+  /* Authenticated but NOT admin role */
+  if (!isAdmin) return (
+    <div style={{ minHeight: "100vh", background: "var(--cream)", fontFamily: "var(--fb)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{FONTS}</style>
+      <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 8, padding: 48, width: 380, boxShadow: "var(--sl)", textAlign: "center" }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>🚫</div>
+        <div style={{ fontFamily: "var(--fd)", fontSize: 20, fontWeight: 500, marginBottom: 8, color: "var(--ink)" }}>Access Denied</div>
+        <div style={{ fontSize: 13, color: "var(--ink-60)", marginBottom: 24 }}>
+          Signed in as <strong>{session.user.email}</strong>, but this account does not have admin privileges.
+        </div>
+        <button onClick={handleLogout} style={{ padding: "10px 24px", background: "transparent", color: "var(--warn)", border: "1.5px solid var(--warn)", borderRadius: 4, cursor: "pointer", fontSize: 13, fontFamily: "var(--fb)" }}>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ── Authenticated Admin Dashboard ── */
   const exportCsv = () => {
-    if (!authed) return;
-    const rows = ["Position,Name,Email,Role,Size,Company,Joined", ...list.map(r => `${r.position},"${r.name}","${r.email}","${r.role}","${r.size}","${r.company || ""}","${new Date(r.joined_at).toLocaleString()}"`)];
+    const sanitize = (val) => {
+      const s = String(val || "");
+      if (/^[=+\-@\t\r]/.test(s)) return "'" + s;
+      return s;
+    };
+    const rows = ["Position,Name,Email,Role,Size,Company,Joined", ...list.map(r => `${r.position},"${sanitize(r.name)}","${sanitize(r.email)}","${sanitize(r.role)}","${sanitize(r.size)}","${sanitize(r.company || "")}","${new Date(r.joined_at).toLocaleString()}"`)];
     const b = new Blob([rows.join("\n")], { type: "text/csv" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "exfinanalyze-waitlist.csv"; a.click();
   };
-  const clearAll = async () => { if (!confirm(`Delete all ${list.length} entries from Supabase? This cannot be undone.`)) return; await sb.deleteAll(); setList([]); };
+  const clearAll = async () => { if (!confirm(`Delete all ${list.length} entries? This cannot be undone.`)) return; await sb.deleteAll(); setList([]); };
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--cream)", fontFamily: "var(--fb)", padding: 40 }}>
@@ -312,7 +406,7 @@ function AdminPanel() {
             <div style={{ color: "var(--ink-60)", fontSize: 14, marginTop: 4, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#27C93F", display: "inline-block" }} />
-                <span style={{ fontFamily: "var(--fm)", fontSize: 11 }}>lziacykpvufkqmjxheep.supabase.co</span>
+                <span style={{ fontFamily: "var(--fm)", fontSize: 11 }}>{session.user.email}</span>
               </span>
               · <span style={{ fontFamily: "var(--fm)", fontWeight: 600, color: "var(--gold)", fontSize: 16 }}>{list.length}</span> signups
             </div>
@@ -320,11 +414,12 @@ function AdminPanel() {
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={exportCsv} style={{ padding: "10px 20px", background: "var(--ink)", color: "var(--cream)", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13, fontFamily: "var(--fb)", fontWeight: 600 }}>↓ Export CSV</button>
             <button onClick={clearAll} style={{ padding: "10px 20px", background: "transparent", color: "var(--warn)", border: "1.5px solid var(--warn)", borderRadius: 4, cursor: "pointer", fontSize: 13, fontFamily: "var(--fb)" }}>Clear All</button>
+            <button onClick={handleLogout} style={{ padding: "10px 20px", background: "transparent", color: "var(--ink-60)", border: "1.5px solid var(--border)", borderRadius: 4, cursor: "pointer", fontSize: 13, fontFamily: "var(--fb)" }}>Sign Out</button>
           </div>
         </div>
         {loading ? (
           <div style={{ textAlign: "center", padding: 80, color: "var(--ink-60)" }}>
-            <div style={{ width: 24, height: 24, border: "2px solid var(--border)", borderTopColor: "var(--gold)", borderRadius: "50%", animation: "spin .7s linear infinite", margin: "0 auto 12px" }} />Loading from Supabase…
+            <div style={{ width: 24, height: 24, border: "2px solid var(--border)", borderTopColor: "var(--gold)", borderRadius: "50%", animation: "spin .7s linear infinite", margin: "0 auto 12px" }} />Loading waitlist…
           </div>
         ) : list.length === 0 ? (
           <div style={{ textAlign: "center", padding: 80, color: "var(--ink-60)" }}>
