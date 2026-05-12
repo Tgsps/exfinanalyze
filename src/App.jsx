@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabaseClient";
+import AuthScreen from "./AuthScreen";
 
 /* ═══════════════════════════════════════════════════════════════════
    EXFINANALYZE — Production SaaS Platform
@@ -272,95 +273,6 @@ function Toasts({ toasts }) {
           <span style={{ color: "var(--ink)" }}>{t.msg}</span>
         </div>
       ))}
-    </div>
-  );
-}
-
-// ─── Auth Screen ──────────────────────────────────────────────────
-function AuthScreen({ onLogin }) {
-  const [tab, setTab]     = useState("login");
-  const [form, setForm]   = useState({ name: "", email: "", password: "", role: "analyst" });
-  const [err, setErr]     = useState("");
-  const [msg, setMsg]     = useState("");
-  const [loading, setLoading] = useState(false);
-  const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
-
-  const submit = async () => {
-    setErr(""); setMsg(""); setLoading(true);
-    try {
-      if (tab === "login") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
-        if (error) throw error;
-        onLogin(data.user);
-      } else {
-        if (!form.name || !form.email || !form.password) throw new Error("All fields are required");
-        if (form.password.length < 6) throw new Error("Password must be at least 6 characters");
-        const { data, error } = await supabase.auth.signUp({
-          email: form.email, password: form.password,
-          options: { data: { name: form.name, role: form.role } },
-        });
-        if (error) throw error;
-        if (data.user && !data.session) {
-          setMsg("Check your email to confirm your account, then sign in.");
-        } else if (data.user) {
-          onLogin(data.user);
-        }
-      }
-    } catch (e) { setErr(e.message); }
-    finally { setLoading(false); }
-  };
-
-  return (
-    <div className="auth-wrap">
-      <div className="auth-card">
-        <div className="auth-logo">ExFinAnalyze</div>
-        <div className="auth-tagline">AI-powered financial intelligence platform</div>
-        <div className="auth-tabs">
-          <button className={`auth-tab${tab === "login"  ? " active" : ""}`} onClick={() => { setTab("login");  setErr(""); setMsg(""); }}>Sign In</button>
-          <button className={`auth-tab${tab === "signup" ? " active" : ""}`} onClick={() => { setTab("signup"); setErr(""); setMsg(""); }}>Sign Up</button>
-        </div>
-
-        {err && <div className="auth-error">{err}</div>}
-        {msg && <div className="auth-success">{msg}</div>}
-
-        {tab === "signup" && (
-          <div className="input-group">
-            <div className="input-label">Full Name</div>
-            <input className="input" placeholder="Jane Smith" value={form.name} onChange={set("name")} />
-          </div>
-        )}
-        <div className="input-group">
-          <div className="input-label">Work Email</div>
-          <input className="input" type="email" placeholder="you@company.com" value={form.email} onChange={set("email")} onKeyDown={e => e.key === "Enter" && submit()} />
-        </div>
-        <div className="input-group">
-          <div className="input-label">Password</div>
-          <input className="input" type="password" placeholder="••••••••" value={form.password} onChange={set("password")} onKeyDown={e => e.key === "Enter" && submit()} />
-        </div>
-        {tab === "signup" && (
-          <div className="input-group">
-            <div className="input-label">Your Role</div>
-            <select className="input select" value={form.role} onChange={set("role")}>
-              <option value="analyst">Financial Analyst</option>
-              <option value="accountant">Accountant</option>
-              <option value="auditor">Auditor</option>
-              <option value="manager">Finance Manager</option>
-              <option value="cfo">CFO / Director</option>
-            </select>
-          </div>
-        )}
-        <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center", padding: "10px" }} onClick={submit} disabled={loading}>
-          {loading ? <><span className="spin">↻</span> Please wait...</> : tab === "login" ? "Sign In" : "Create Account"}
-        </button>
-        {tab === "login" && (
-          <>
-            <div className="auth-divider"><span>or</span></div>
-            <div style={{ fontSize: 12, color: "var(--ink3)", textAlign: "center", lineHeight: 1.6 }}>
-              Don't have an account? Switch to <button onClick={() => setTab("signup")} style={{ background: "none", border: "none", color: "var(--gold)", cursor: "pointer", fontSize: 12, fontFamily: "var(--fb)" }}>Sign Up</button>
-            </div>
-          </>
-        )}
-      </div>
     </div>
   );
 }
