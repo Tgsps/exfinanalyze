@@ -5,7 +5,7 @@ import AuthScreen from "./AuthScreen";
 /* ═══════════════════════════════════════════════════════════════════
    EXFINANALYZE — Production SaaS Platform
    Auth: Supabase Auth (real backend)
-   AI:   Gemini 1.5 Flash via VITE_GEMINI_API_KEY
+   AI:   Gemini 1.5 Flash Latest via VITE_GEMINI_API_KEY
    Docs: Supabase Storage + local fallback
    Design: Dark editorial-financial
 ═══════════════════════════════════════════════════════════════════ */
@@ -15,7 +15,7 @@ const gemini = {
   async analyze(prompt, fileData = null) {
     const key = import.meta.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("VITE_GEMINI_API_KEY not configured");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`;
     const parts = [{ text: prompt }];
     if (fileData) parts.unshift({ inlineData: { mimeType: fileData.mimeType, data: fileData.data } });
     const res = await fetch(url, {
@@ -560,7 +560,7 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
     <div>
       <div className="page-header">
         <div className="page-title">AI Analysis</div>
-        <div className="page-sub">Gemini 1.5 Flash — free tier · no extra cost</div>
+        <div className="page-sub">Gemini 1.5 Flash Latest — free tier · no extra cost</div>
       </div>
 
       <div className="grid-2" style={{ alignItems: "start" }}>
