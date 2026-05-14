@@ -790,60 +790,178 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
 
 // ─── Reports ──────────────────────────────────────────────────────
 function ReportsPage({ user, docs, toast }) {
-  const [type,   setType]   = useState("monthly");
-  const [output, setOutput] = useState("");
-  const [busy,   setBusy]   = useState(false);
+  const [type,    setType]    = useState("monthly");
+  const [output,  setOutput]  = useState("");
+  const [busy,    setBusy]    = useState(false);
+  const [pdfUrl,  setPdfUrl]  = useState(null);
+  const [pdfName, setPdfName] = useState("");
   const analyzed = docs.filter(d => d.status === "analyzed");
 
   const TYPES = [
-    { id: "monthly", label: "Monthly Close Report",  desc: "Full summary for CFO review" },
-    { id: "risk",    label: "Risk Assessment",        desc: "Risk matrix and mitigations" },
-    { id: "audit",   label: "Audit Readiness",        desc: "Pre-audit checklist" },
+    { id: "monthly", label: "Monthly Close Report",  desc: "Full summary for CFO review",   icon: "📊", color: "#C8924A" },
+    { id: "risk",    label: "Risk Assessment",        desc: "Risk matrix and mitigations",    icon: "⚠️", color: "#E05C5C" },
+    { id: "audit",   label: "Audit Readiness",        desc: "Pre-audit checklist",            icon: "✅", color: "#4CAF7D" },
   ];
 
   const generate = async () => {
     if (!import.meta.env.VITE_GEMINI_API_KEY) { toast("Configure VITE_GEMINI_API_KEY first", "error"); return; }
     if (analyzed.length === 0) { toast("Analyze documents first", "error"); return; }
-    setBusy(true); setOutput("");
+    setBusy(true); setOutput(""); setPdfUrl(null);
     const ctx = analyzed.map(d => `• ${d.name} (${d.type}, ${d.riskLevel||"?"} risk):\n${(d.analysis||"").slice(0,600)}`).join("\n\n");
     const prompts = {
-      monthly: `Generate a Monthly Financial Close Report from ${analyzed.length} analyzed documents:\n\n${ctx}\n\nStructure: Executive Summary → Key Metrics → Document Analysis → Risk Flags → Recommendations → Next Steps. Ready for CFO.`,
-      risk:    `Generate a Risk Assessment Report from ${analyzed.length} documents:\n\n${ctx}\n\nInclude: Risk Matrix, Top Risks by severity, Mitigations, Action items with owners and deadlines.`,
+      monthly: `Generate a Monthly Financial Close Report from ${analyzed.length} analyzed documents:\n\n${ctx}\n\nStructure: Executive Summary → Key Metrics → Document Analysis → Risk Flags → Recommendations → Next Steps. Ready for CFO. Use clear headers and bullet points.`,
+      risk:    `Generate a Risk Assessment Report from ${analyzed.length} documents:\n\n${ctx}\n\nInclude: Risk Matrix, Top Risks by severity (CRITICAL/HIGH/MEDIUM/LOW), Mitigations, Action items with owners and deadlines.`,
       audit:   `Generate an Audit Readiness Report from ${analyzed.length} documents:\n\n${ctx}\n\nInclude: Documentation completeness checklist, Missing items, Compliance gaps, Pre-audit action plan.`,
     };
     try {
       const result = await gemini.analyze(prompts[type]);
       setOutput(result);
-      toast("Report generated ✓", "success");
-    } catch { toast("Generation failed", "error"); }
+      await buildPDF(result);
+      toast("Report ready ✓", "success");
+    } catch (e) { toast("Generation failed: " + e.message, "error"); }
     setBusy(false);
   };
 
-  const download = () => {
-    const blob = new Blob([output], { type: "text/plain" });
+  const buildPDF = async (text) => {
+    const t = TYPES.find(x => x.id === type);
+    const filename = `ExFinAnalyze-${type}-${new Date().toISOString().slice(0,10)}.pdf`;
+    setPdfName(filename);
+
+    // Parse text into sections
+    const lines = text.split("\n").filter(l => l.trim());
+
+    // Build HTML for PDF
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',Helvetica,Arial,sans-serif;background:#fff;color:#1a1a1a;font-size:11pt;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#0C0E0D 0%,#1a1f1c 100%);padding:60px 56px;min-height:220px;position:relative;}
+  .cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C8924A,#E2A85C,#C8924A);}
+  .logo{font-family:'Fraunces',Georgia,serif;font-size:22pt;font-weight:700;color:#C8924A;letter-spacing:-.5px;margin-bottom:6px;}
+  .logo-sub{font-size:9pt;color:#6B6760;letter-spacing:1px;text-transform:uppercase;margin-bottom:36px;}
+  .report-title{font-family:'Fraunces',Georgia,serif;font-size:26pt;font-weight:700;color:#E8E4DC;line-height:1.2;margin-bottom:10px;}
+  .report-meta{font-size:10pt;color:#A8A49C;}
+  .body{padding:48px 56px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-size:16pt;font-weight:700;color:#0C0E0D;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #C8924A;}
+  h2{font-family:'Fraunces',Georgia,serif;font-size:13pt;font-weight:600;color:#1a1a1a;margin:20px 0 8px;}
+  h3{font-size:11pt;font-weight:600;color:#3a3a3a;margin:14px 0 6px;}
+  p{margin-bottom:8px;color:#2a2a2a;}
+  ul{margin:8px 0 12px 18px;}
+  li{margin-bottom:4px;color:#2a2a2a;}
+  .risk-critical{color:#C0392B;font-weight:600;}
+  .risk-high{color:#E67E22;font-weight:600;}
+  .risk-medium{color:#C8924A;font-weight:600;}
+  .risk-low{color:#27AE60;font-weight:600;}
+  .highlight{background:#FFF8F0;border-left:3px solid #C8924A;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;}
+  .footer{margin-top:48px;padding-top:16px;border-top:1px solid #E0D8D0;display:flex;justify-content:space-between;font-size:9pt;color:#A8A49C;}
+  .page-num{text-align:right;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;}
+  th{background:#0C0E0D;color:#E8E4DC;padding:8px 12px;text-align:left;font-size:10pt;}
+  td{padding:7px 12px;border-bottom:1px solid #E8E4DC;font-size:10pt;}
+  tr:nth-child(even) td{background:#FAFAF9;}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="logo">ExFinAnalyze</div>
+  <div class="logo-sub">Financial Intelligence Platform</div>
+  <div class="report-title">${t.label}</div>
+  <div class="report-meta">
+    Generated: ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})} &nbsp;·&nbsp;
+    ${analyzed.length} document${analyzed.length>1?"s":""} analyzed &nbsp;·&nbsp;
+    Prepared by AI
+  </div>
+</div>
+<div class="body">
+${lines.map(line => {
+  const clean = line.replace(/\*\*/g,"").trim();
+  if (!clean) return "<br/>";
+  if (line.startsWith("# ") || line.match(/^#{1}\s/)) return `<h1>${clean.replace(/^#+\s*/,"")}</h1>`;
+  if (line.startsWith("## ") || line.match(/^#{2}\s/)) return `<h2>${clean.replace(/^#+\s*/,"")}</h2>`;
+  if (line.startsWith("### ") || line.match(/^#{3}\s/)) return `<h3>${clean.replace(/^#+\s*/,"")}</h3>`;
+  if (line.match(/^[-*•]\s/)) return `<ul><li>${clean.replace(/^[-*•]\s*/,"")}</li></ul>`;
+  if (line.match(/^\d+\.\s/)) return `<ul><li>${clean}</li></ul>`;
+  if (clean.match(/critical/i)) return `<p class="risk-critical">⚠ ${clean}</p>`;
+  if (clean.match(/high risk/i)) return `<p class="risk-high">▲ ${clean}</p>`;
+  if (clean.length < 80 && clean.endsWith(":")) return `<h3>${clean}</h3>`;
+  return `<p>${clean}</p>`;
+}).join("\n")}
+<div class="footer">
+  <span>ExFinAnalyze · AI-Powered Financial Intelligence · Confidential</span>
+  <span>${new Date().getFullYear()}</span>
+</div>
+</div>
+</body>
+</html>`;
+
+    // Create blob URL for preview iframe
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const url  = URL.createObjectURL(blob);
+    setPdfUrl({ html: url, content: htmlContent, filename });
+  };
+
+  const downloadPDF = () => {
+    if (!pdfUrl) return;
+    // Open print dialog in new window for PDF save
+    const win = window.open("", "_blank");
+    win.document.write(pdfUrl.content);
+    win.document.close();
+    win.onload = () => {
+      win.focus();
+      win.print();
+    };
+    toast("Print dialog opened — Save as PDF", "success");
+  };
+
+  const downloadWord = () => {
+    if (!output) return;
+    const t = TYPES.find(x => x.id === type);
+    // Build simple Word-compatible HTML
+    const wordHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='UTF-8'><title>${t.label}</title>
+<style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6;margin:2cm;}
+h1{font-size:16pt;color:#C8924A;border-bottom:2px solid #C8924A;padding-bottom:4pt;}
+h2{font-size:13pt;color:#1a1a1a;}p{margin:6pt 0;}</style></head>
+<body>
+<h1 style="font-size:20pt;color:#0C0E0D;">ExFinAnalyze — ${t.label}</h1>
+<p style="color:#888;">Generated: ${new Date().toLocaleDateString()} · ${analyzed.length} documents</p><hr/>
+${output.split("\n").map(l => {
+  const c = l.replace(/\*\*/g,"").trim();
+  if (!c) return "<br/>";
+  if (l.startsWith("# ")) return `<h1>${c.replace(/^#+\s*/,"")}</h1>`;
+  if (l.startsWith("## ")) return `<h2>${c.replace(/^#+\s*/,"")}</h2>`;
+  if (l.match(/^[-*•]\s/)) return `<p>• ${c.replace(/^[-*•]\s*/,"")}</p>`;
+  return `<p>${c}</p>`;
+}).join("")}
+</body></html>`;
+    const blob = new Blob(["\ufeff", wordHtml], { type: "application/msword" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `ExFinAnalyze-${type}-${new Date().toISOString().slice(0,10)}.txt`;
+    a.href = url; a.download = `ExFinAnalyze-${type}-${new Date().toISOString().slice(0,10)}.doc`;
     a.click(); URL.revokeObjectURL(url);
-    toast("Downloaded", "success");
+    toast("Word document downloaded ✓", "success");
   };
 
   return (
     <div>
       <div className="page-header">
         <div className="page-title">Reports & Narratives</div>
-        <div className="page-sub">AI-generated financial reports from your analyzed documents</div>
+        <div className="page-sub">AI-generated financial reports — export as PDF or Word</div>
       </div>
 
       <div className="grid-2" style={{ alignItems: "start" }}>
+        {/* Left: controls */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div className="card">
             <div className="card-title mb-3">Report Type</div>
             {TYPES.map(r => (
-              <button key={r.id} onClick={() => setType(r.id)}
+              <button key={r.id} onClick={() => { setType(r.id); setPdfUrl(null); setOutput(""); }}
                 style={{ display: "flex", gap: 12, padding: "11px", borderRadius: "var(--r)", border: `1px solid ${type===r.id?"var(--gold)":"var(--border)"}`, background: type===r.id?"rgba(200,146,74,.07)":"transparent", cursor: "pointer", textAlign: "left", width: "100%", marginBottom: 8, transition: "all .13s" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: type===r.id?"var(--gold)":"var(--border2)", marginTop: 5, flexShrink: 0 }} />
+                <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon}</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: type===r.id?"var(--gold)":"var(--ink)", fontFamily: "var(--fb)" }}>{r.label}</div>
                   <div style={{ fontSize: 11.5, color: "var(--ink3)", marginTop: 1 }}>{r.desc}</div>
@@ -863,19 +981,56 @@ function ReportsPage({ user, docs, toast }) {
             {busy ? <><span className="spin">↻</span> Generating...</> : <><IC n="report" s={14} /> Generate Report</>}
           </button>
 
-          {output && <button className="btn btn-ghost" onClick={download} style={{ justifyContent: "center", width: "100%" }}><IC n="download" s={13} /> Download .txt</button>}
-        </div>
-
-        <div className="card" style={{ minHeight: 480 }}>
-          <div className="card-title mb-4">Generated Report</div>
-          {busy && <div className="ai-thinking mb-4"><div className="dot-pulse"><span/><span/><span/></div><span>Compiling report...</span></div>}
-          {!output && !busy && (
-            <div className="empty-state" style={{ padding: "56px 0" }}>
-              <div className="empty-icon">📊</div>
-              <div style={{ color: "var(--ink2)", fontSize: 13 }}>Select type and generate</div>
+          {pdfUrl && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <button className="btn btn-primary" onClick={downloadPDF} style={{ justifyContent: "center", width: "100%", background: "linear-gradient(135deg,#E05C5C,#c94444)" }}>
+                <IC n="download" s={13} /> Save as PDF
+              </button>
+              <button className="btn btn-ghost" onClick={downloadWord} style={{ justifyContent: "center", width: "100%" }}>
+                <IC n="docs" s={13} /> Download Word (.doc)
+              </button>
             </div>
           )}
-          {output && <div className="ai-output">{output}</div>}
+        </div>
+
+        {/* Right: preview */}
+        <div className="card" style={{ minHeight: 520, padding: 0, overflow: "hidden" }}>
+          {/* Header */}
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", fontFamily: "var(--fb)" }}>
+              {pdfUrl ? pdfName : "Report Preview"}
+            </div>
+            {pdfUrl && (
+              <div style={{ display: "flex", gap: 6 }}>
+                <span className="badge badge-green" style={{ fontSize: 10 }}>✓ Ready</span>
+                <button className="btn btn-ghost btn-sm" onClick={downloadPDF}><IC n="download" s={11} /> PDF</button>
+                <button className="btn btn-ghost btn-sm" onClick={downloadWord}><IC n="docs" s={11} /> Word</button>
+              </div>
+            )}
+          </div>
+
+          {/* Preview area */}
+          {busy && (
+            <div className="empty-state" style={{ padding: "80px 0" }}>
+              <div className="ai-thinking"><div className="dot-pulse"><span/><span/><span/></div><span>Compiling report…</span></div>
+            </div>
+          )}
+
+          {!pdfUrl && !busy && (
+            <div className="empty-state" style={{ padding: "80px 0" }}>
+              <div className="empty-icon">📄</div>
+              <div style={{ color: "var(--ink2)", fontSize: 13 }}>Select type and generate report</div>
+              <div className="text-muted mt-2">Preview will appear here — export as PDF or Word</div>
+            </div>
+          )}
+
+          {pdfUrl && !busy && (
+            <iframe
+              src={pdfUrl.html}
+              style={{ width: "100%", height: 560, border: "none", background: "#fff" }}
+              title="Report Preview"
+            />
+          )}
         </div>
       </div>
     </div>
