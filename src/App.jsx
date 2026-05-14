@@ -546,130 +546,242 @@ function DocumentsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) 
   );
 }
 
-// ─── AI Analysis ──────────────────────────────────────────────────
+// ─── AI Analysis + Chat ───────────────────────────────────────────
 function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }) {
-  const [docId,    setDocId]    = useState(selectedDoc?.id || "");
-  const [mode,     setMode]     = useState("extract");
-  const [output,   setOutput]   = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [question, setQuestion] = useState("");
+  const [docId,   setDocId]   = useState(selectedDoc?.id || "");
+  const [mode,    setMode]    = useState("extract");
+  const [loading, setLoading] = useState(false);
+  const [input,   setInput]   = useState("");
+  // chat history: { role: "user"|"ai", text, ts, isAnalysis? }
+  const [chat,    setChat]    = useState([]);
+  const chatEndRef = useRef(null);
+  const inputRef   = useRef(null);
 
-  useEffect(() => { if (selectedDoc) { setDocId(selectedDoc.id); setOutput(selectedDoc.analysis || ""); } }, [selectedDoc]);
+  useEffect(() => { if (selectedDoc) { setDocId(selectedDoc.id); setChat([]); } }, [selectedDoc]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chat, loading]);
 
   const currentDoc = docs.find(d => d.id === docId);
 
   const MODES = [
-    { id: "extract",   label: "Extract Data",       icon: "docs",   color: "var(--gold)",   prompt: (n,t) => `You are an expert financial analyst. Analyze this ${t} document: "${n}".\n\nExtract ALL financial data:\n- Key figures (revenues, expenses, assets, liabilities)\n- Dates and periods\n- Parties involved\n- Payment terms and amounts\n- Critical clauses or conditions\n- Missing or anomalous items\n\nFormat with clear sections. End with: RISK ASSESSMENT: LOW / MEDIUM / HIGH and why.` },
-    { id: "shadow",    label: "Shadow Review",       icon: "ai",     color: "var(--purple)", prompt: (n,t) => `You are an AI Shadow Reviewer — an expert accounting tutor reviewing "${n}" (${t}).\n\nProvide:\n1. ACCOUNTING TREATMENT (GAAP/IFRS)\n2. APPLICABLE ASC STANDARDS (842 leases, 606 revenue, etc.)\n3. COMMON JUNIOR MISTAKES to avoid\n4. STEP-BY-STEP accounting walkthrough\n5. AUDIT FOCUS AREAS\n6. EDUCATIONAL TIPS for junior staff\n\nWrite as a teaching document, not just a review.` },
-    { id: "risk",      label: "Risk Analysis",       icon: "alert",  color: "var(--red)",    prompt: (n,t) => `Perform a comprehensive risk analysis of "${n}" (${t}).\n\nAnalyze:\n1. FINANCIAL RISKS — exposure, concentration\n2. COMPLIANCE RISKS — regulatory gaps\n3. CONTRACTUAL RISKS — unfavorable terms\n4. FRAUD INDICATORS — red flags\n\nFor each risk: Severity (CRITICAL/HIGH/MEDIUM/LOW) + Likelihood + Mitigation.\nEnd with: OVERALL RISK SCORE (1-10) + justification.` },
-    { id: "summary",   label: "Executive Summary",   icon: "report", color: "var(--blue)",   prompt: (n,t) => `Create a concise executive summary of "${n}" (${t}) for a CFO.\n\n1. DOCUMENT OVERVIEW (2-3 sentences)\n2. KEY FINANCIAL HIGHLIGHTS (bullets with numbers)\n3. CRITICAL DATES & DEADLINES\n4. RISKS & CONCERNS\n5. RECOMMENDED ACTIONS\n\nBe direct and actionable.` },
-    { id: "narrative", label: "MD&A Narrative",      icon: "report", color: "var(--green)",  prompt: (n,t) => `Generate a Management Discussion & Analysis (MD&A) narrative for "${n}" (${t}).\n\nInclude:\n1. RESULTS OF OPERATIONS — period analysis\n2. REVENUE DRIVERS\n3. COST ANALYSIS — key expense trends\n4. LIQUIDITY & CAPITAL\n5. FORWARD-LOOKING STATEMENTS\n\nWrite in professional MD&A style ready for regulatory filing.` },
+    { id: "extract",   label: "Extract Data",     icon: "docs",   color: "var(--gold)",   prompt: (n,t) => `You are an expert financial analyst. Analyze this ${t} document: "${n}".\n\nExtract ALL financial data:\n- Key figures (revenues, expenses, assets, liabilities)\n- Dates and periods\n- Parties involved\n- Payment terms and amounts\n- Critical clauses\n- Missing or anomalous items\n\nFormat with clear sections. End with: RISK ASSESSMENT: LOW / MEDIUM / HIGH and why.` },
+    { id: "shadow",    label: "Shadow Review",     icon: "ai",     color: "var(--purple)", prompt: (n,t) => `You are an AI Shadow Reviewer — an expert accounting tutor reviewing "${n}" (${t}).\n\n1. ACCOUNTING TREATMENT (GAAP/IFRS)\n2. APPLICABLE ASC STANDARDS (842, 606, etc.)\n3. COMMON JUNIOR MISTAKES\n4. STEP-BY-STEP walkthrough\n5. AUDIT FOCUS AREAS\n6. EDUCATIONAL TIPS\n\nWrite as a teaching document.` },
+    { id: "risk",      label: "Risk Analysis",     icon: "alert",  color: "var(--red)",    prompt: (n,t) => `Perform a comprehensive risk analysis of "${n}" (${t}).\n\n1. FINANCIAL RISKS\n2. COMPLIANCE RISKS\n3. CONTRACTUAL RISKS\n4. FRAUD INDICATORS\n\nFor each: Severity (CRITICAL/HIGH/MEDIUM/LOW) + Likelihood + Mitigation.\nEnd with: OVERALL RISK SCORE (1-10).` },
+    { id: "summary",   label: "Executive Summary", icon: "report", color: "var(--blue)",   prompt: (n,t) => `Create a concise executive summary of "${n}" (${t}) for a CFO.\n\n1. DOCUMENT OVERVIEW\n2. KEY FINANCIAL HIGHLIGHTS\n3. CRITICAL DATES\n4. RISKS & CONCERNS\n5. RECOMMENDED ACTIONS\n\nBe direct and actionable.` },
+    { id: "narrative", label: "MD&A Narrative",    icon: "report", color: "var(--green)",  prompt: (n,t) => `Generate an MD&A narrative for "${n}" (${t}).\n\n1. RESULTS OF OPERATIONS\n2. REVENUE DRIVERS\n3. COST ANALYSIS\n4. LIQUIDITY & CAPITAL\n5. FORWARD-LOOKING STATEMENTS\n\nProfessional MD&A style, ready for regulatory filing.` },
   ];
 
-  const run = async () => {
+  // Build conversation history for context-aware chat
+  const buildHistory = () => chat.map(m => `${m.role === "user" ? "User" : "AI"}: ${m.text}`).join("\n\n");
+
+  const addMsg = (role, text, isAnalysis = false) => {
+    setChat(p => [...p, { role, text, ts: new Date(), isAnalysis }]);
+  };
+
+  const runAnalysis = async () => {
     if (!currentDoc) return;
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      setOutput("⚠️ Gemini API key not configured.\n\nAdd VITE_GEMINI_API_KEY to Netlify → Site Settings → Environment Variables.");
-      return;
-    }
-    setLoading(true); setOutput("");
+    const m = MODES.find(x => x.id === mode);
+    addMsg("user", `Run ${m.label}`, true);
+    setLoading(true);
     try {
-      const m = MODES.find(x => x.id === mode);
       const result = await gemini.analyze(m.prompt(currentDoc.name, currentDoc.type), currentDoc.fileData);
-      setOutput(result);
+      addMsg("ai", result, true);
       const rl = result.match(/risk.*?:\s*(critical|high|medium|low)/i)?.[1]?.toLowerCase() || "medium";
       docStore.update(user.id, docId, { status: "analyzed", analysis: result, riskLevel: rl, analyzedAt: new Date().toISOString() });
       setDocs(docStore.get(user.id));
       toast("Analysis complete ✓", "success");
     } catch (e) {
-      setOutput(`Error: ${e.message}`);
+      addMsg("ai", `⚠️ Error: ${e.message}`);
       toast("Analysis failed", "error");
     }
     setLoading(false);
   };
 
-  const ask = async () => {
-    if (!question.trim() || !currentDoc) return;
+  const sendMessage = async () => {
+    const q = input.trim();
+    if (!q || !currentDoc || loading) return;
+    setInput("");
+    addMsg("user", q);
     setLoading(true);
     try {
-      const prompt = `Document: "${currentDoc.name}"\nPrevious analysis:\n${output || "None"}\n\nUser question: ${question}\n\nAnswer specifically and accurately based on the document.`;
+      const history = buildHistory();
+      const prompt = `You are a financial AI assistant analyzing the document "${currentDoc.name}".\n\nConversation so far:\n${history || "None"}\n\nUser: ${q}\n\nAnswer specifically based on the document content. Be concise and precise.`;
       const result = await gemini.analyze(prompt, currentDoc.fileData);
-      setOutput(p => `${p}\n\n── Q: ${question} ──\n${result}`);
-      setQuestion("");
-    } catch { toast("Failed", "error"); }
+      addMsg("ai", result);
+    } catch (e) {
+      addMsg("ai", `⚠️ ${e.message}`);
+      toast("Failed", "error");
+    }
     setLoading(false);
+    inputRef.current?.focus();
+  };
+
+  const clearChat = () => { setChat([]); toast("Chat cleared", "success"); };
+
+  const copyAll = () => {
+    const text = chat.map(m => `${m.role === "user" ? "You" : "AI"}: ${m.text}`).join("\n\n---\n\n");
+    navigator.clipboard.writeText(text);
+    toast("Copied ✓", "success");
+  };
+
+  // Render markdown-ish text
+  const renderText = (text) => {
+    const lines = text.split("\n");
+    return lines.map((line, i) => {
+      if (line.startsWith("## ")) return <div key={i} style={{ fontFamily: "var(--fs)", fontWeight: 600, fontSize: 13.5, color: "var(--gold)", margin: "12px 0 4px" }}>{line.slice(3)}</div>;
+      if (line.startsWith("# "))  return <div key={i} style={{ fontFamily: "var(--fs)", fontWeight: 700, fontSize: 15, color: "var(--ink)", margin: "14px 0 6px" }}>{line.slice(2)}</div>;
+      if (line.match(/^\*\*(.+)\*\*$/)) return <div key={i} style={{ fontWeight: 600, color: "var(--ink)", fontSize: 12.5, marginTop: 8 }}>{line.replace(/\*\*/g,"")}</div>;
+      if (line.startsWith("- ") || line.startsWith("* ")) return <div key={i} style={{ paddingLeft: 14, fontSize: 12.5, color: "var(--ink2)", lineHeight: 1.7, position:"relative" }}><span style={{ position:"absolute", left:4, color:"var(--gold)" }}>·</span>{line.slice(2).replace(/\*\*/g,"")}</div>;
+      if (line.match(/^\d+\./)) return <div key={i} style={{ paddingLeft: 14, fontSize: 12.5, color: "var(--ink2)", lineHeight: 1.7 }}>{line.replace(/\*\*/g,"")}</div>;
+      if (line === "") return <div key={i} style={{ height: 6 }} />;
+      return <div key={i} style={{ fontSize: 12.5, color: "var(--ink2)", lineHeight: 1.75 }}>{line.replace(/\*\*/g,"")}</div>;
+    });
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ height: "calc(100vh - 60px)", display: "flex", flexDirection: "column", gap: 0 }}>
+      <div className="page-header" style={{ marginBottom: 14 }}>
         <div className="page-title">AI Analysis</div>
-        <div className="page-sub">Gemini 2.0 Flash — free tier · no extra cost</div>
+        <div className="page-sub">Gemini 2.5 Flash — document chat + analysis</div>
       </div>
 
-      <div className="grid-2" style={{ alignItems: "start" }}>
-        {/* Controls */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", gap: 14, flex: 1, minHeight: 0 }}>
+
+        {/* ── Left panel: controls ── */}
+        <div style={{ width: 260, flexShrink: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+
+          {/* Document selector */}
           <div className="card">
-            <div className="card-title mb-3">Select Document</div>
-            <select className="input select" value={docId} onChange={e => { setDocId(e.target.value); setOutput(""); setSelectedDoc(null); }}>
+            <div className="card-title mb-2" style={{ fontSize: 11.5 }}>DOCUMENT</div>
+            <select className="input select" value={docId} onChange={e => { setDocId(e.target.value); setChat([]); setSelectedDoc(null); }} style={{ fontSize: 12 }}>
               <option value="">— Choose a document —</option>
-              {docs.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              {docs.map(d => <option key={d.id} value={d.id}>{d.name.length > 32 ? d.name.slice(0,30)+"…" : d.name}</option>)}
             </select>
             {currentDoc && (
-              <div className="flex gap-2 mt-3">
-                <span className="tag" style={{ textTransform: "uppercase", fontSize: 9.5 }}>{currentDoc.type}</span>
-                <span className={`badge badge-${currentDoc.status==="analyzed"?"green":"gold"}`}>{currentDoc.status}</span>
-                {currentDoc.riskLevel && <span className={`badge badge-${currentDoc.riskLevel==="high"?"red":currentDoc.riskLevel==="medium"?"gold":"green"}`}>{currentDoc.riskLevel} risk</span>}
+              <div className="flex gap-2 mt-2" style={{ flexWrap: "wrap" }}>
+                <span className="tag" style={{ textTransform: "uppercase", fontSize: 9 }}>{currentDoc.type}</span>
+                <span className={`badge badge-${currentDoc.status==="analyzed"?"green":"gold"}`} style={{ fontSize: 9.5 }}>{currentDoc.status}</span>
+                {currentDoc.riskLevel && <span className={`badge badge-${currentDoc.riskLevel==="high"?"red":currentDoc.riskLevel==="medium"?"gold":"green"}`} style={{ fontSize: 9.5 }}>{currentDoc.riskLevel} risk</span>}
               </div>
             )}
           </div>
 
-          <div className="card">
-            <div className="card-title mb-3">Analysis Mode</div>
+          {/* Analysis modes */}
+          <div className="card" style={{ flex: 1 }}>
+            <div className="card-title mb-2" style={{ fontSize: 11.5 }}>ANALYSIS MODE</div>
             {MODES.map(m => (
               <button key={m.id} onClick={() => setMode(m.id)}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 11px", borderRadius: "var(--r)", border: `1px solid ${mode===m.id?"var(--gold)":"var(--border)"}`, background: mode===m.id?"rgba(200,146,74,.07)":"transparent", cursor: "pointer", width: "100%", marginBottom: 6, transition: "all .13s" }}>
-                <IC n={m.icon} s={14} c={mode===m.id ? m.color : "var(--ink3)"} />
-                <span style={{ fontSize: 12.5, color: mode===m.id ? "var(--gold)" : "var(--ink2)", fontWeight: mode===m.id?500:400, fontFamily:"var(--fb)" }}>{m.label}</span>
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: "var(--r)", border: `1px solid ${mode===m.id?"var(--gold)":"var(--border)"}`, background: mode===m.id?"rgba(200,146,74,.07)":"transparent", cursor: "pointer", width: "100%", marginBottom: 5, transition: "all .13s" }}>
+                <IC n={m.icon} s={12} c={mode===m.id ? m.color : "var(--ink3)"} />
+                <span style={{ fontSize: 12, color: mode===m.id?"var(--gold)":"var(--ink2)", fontWeight: mode===m.id?500:400, fontFamily:"var(--fb)" }}>{m.label}</span>
               </button>
             ))}
+            <button className="btn btn-primary mt-2" onClick={runAnalysis} disabled={!docId||loading} style={{ justifyContent: "center", width: "100%", padding: "9px", fontSize: 12.5 }}>
+              {loading ? <><span className="spin">↻</span> Analyzing…</> : <><IC n="ai" s={13} /> Run Analysis</>}
+            </button>
           </div>
-
-          <button className="btn btn-primary" onClick={run} disabled={!docId||loading} style={{ justifyContent: "center", width: "100%", padding: "11px" }}>
-            {loading ? <><span className="spin">↻</span> Analyzing...</> : <><IC n="ai" s={14} /> Run Analysis</>}
-          </button>
-
-          {output && !loading && (
-            <div className="card">
-              <div className="card-title mb-3" style={{ fontSize: 13 }}>Ask a Question</div>
-              <input className="input" placeholder="e.g. What are the payment terms?" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => e.key==="Enter" && ask()} />
-              <button className="btn btn-ghost btn-sm mt-3" onClick={ask} disabled={!question||loading}>
-                <IC n="search" s={12} /> Ask Gemini
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Output */}
-        <div className="card" style={{ minHeight: 520 }}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="card-title">Output</div>
-            {output && (
-              <button className="btn btn-ghost btn-sm" onClick={() => { navigator.clipboard.writeText(output); toast("Copied", "success"); }}>
-                <IC n="copy" s={12} /> Copy
-              </button>
-            )}
-          </div>
-          {loading && <div className="ai-thinking mb-4"><div className="dot-pulse"><span/><span/><span/></div><span>Gemini is analyzing...</span></div>}
-          {!output && !loading && (
-            <div className="empty-state" style={{ padding: "56px 0" }}>
-              <div className="empty-icon">🤖</div>
-              <div style={{ color: "var(--ink2)", fontSize: 13 }}>Select a document and run analysis</div>
-              <div className="text-muted mt-3">Gemini will extract, review, and explain your financial data</div>
+        {/* ── Right panel: chat ── */}
+        <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden", minHeight: 0 }}>
+
+          {/* Chat header */}
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)", boxShadow: "0 0 6px var(--green)" }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", fontFamily: "var(--fb)" }}>
+                {currentDoc ? currentDoc.name.slice(0, 40) + (currentDoc.name.length > 40 ? "…" : "") : "No document selected"}
+              </span>
             </div>
-          )}
-          {output && <div className="ai-output">{output}</div>}
+            <div style={{ display: "flex", gap: 6 }}>
+              {chat.length > 0 && <>
+                <button className="btn btn-ghost btn-sm" onClick={copyAll}><IC n="copy" s={11} /> Copy all</button>
+                <button className="btn btn-ghost btn-sm" onClick={clearChat} style={{ color: "var(--red)" }}><IC n="trash" s={11} /> Clear</button>
+              </>}
+            </div>
+          </div>
+
+          {/* Messages area */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
+            {chat.length === 0 && !loading && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12 }}>
+                <div style={{ fontSize: 40 }}>🤖</div>
+                <div style={{ fontSize: 13, color: "var(--ink2)", fontWeight: 500 }}>
+                  {currentDoc ? "Run an analysis or ask a question about your document" : "Select a document to start"}
+                </div>
+                {currentDoc && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
+                    {["What are the key financial figures?", "Identify any risks", "Summarize in 3 bullet points"].map(q => (
+                      <button key={q} onClick={() => { setInput(q); inputRef.current?.focus(); }}
+                        style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--ink3)", fontSize: 11.5, cursor: "pointer", transition: "all .13s" }}
+                        onMouseEnter={e => e.target.style.borderColor="var(--gold)"}
+                        onMouseLeave={e => e.target.style.borderColor="var(--border)"}
+                      >{q}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {chat.map((msg, i) => (
+              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: msg.role === "user" ? "flex-end" : "flex-start", gap: 3 }}>
+                {/* Label */}
+                <div style={{ fontSize: 10.5, color: "var(--ink3)", fontWeight: 600, letterSpacing: ".4px", paddingLeft: msg.role === "ai" ? 4 : 0, paddingRight: msg.role === "user" ? 4 : 0 }}>
+                  {msg.role === "user" ? "YOU" : "EXFINANALYZE AI"}
+                  {msg.isAnalysis && <span style={{ marginLeft: 5, color: "var(--gold)", fontSize: 10 }}>· ANALYSIS</span>}
+                </div>
+                {/* Bubble */}
+                <div style={{
+                  maxWidth: "88%",
+                  padding: msg.role === "user" ? "9px 14px" : "13px 16px",
+                  borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px",
+                  background: msg.role === "user" ? "rgba(200,146,74,.12)" : "var(--surface)",
+                  border: `1px solid ${msg.role === "user" ? "rgba(200,146,74,.2)" : "var(--border)"}`,
+                  fontSize: 12.5,
+                  lineHeight: 1.7,
+                  color: "var(--ink2)",
+                }}>
+                  {msg.role === "user"
+                    ? <span style={{ color: "var(--ink)" }}>{msg.text}</span>
+                    : <div>{renderText(msg.text)}</div>
+                  }
+                </div>
+                <div style={{ fontSize: 10, color: "var(--ink3)", paddingLeft: 4, paddingRight: 4 }}>
+                  {msg.ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div style={{ padding: "12px 16px", borderRadius: "4px 14px 14px 14px", background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <div className="dot-pulse"><span/><span/><span/></div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input bar */}
+          <div style={{ padding: "12px 14px", borderTop: "1px solid var(--border)", display: "flex", gap: 8, flexShrink: 0, background: "var(--bg)" }}>
+            <input
+              ref={inputRef}
+              className="input"
+              placeholder={currentDoc ? "Ask anything about this document…" : "Select a document first"}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
+              disabled={!currentDoc || loading}
+              style={{ flex: 1, fontSize: 13 }}
+            />
+            <button
+              className="btn btn-primary"
+              onClick={sendMessage}
+              disabled={!input.trim() || !currentDoc || loading}
+              style={{ padding: "0 16px", flexShrink: 0 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
