@@ -1397,6 +1397,338 @@ function SettingsPage({ user, toast }) {
   );
 }
 
+// ─── Incentive Calculator Page ───────────────────────────────────
+const TIERS = [
+  { achv: 95,  payout: 50  },
+  { achv: 100, payout: 100 },
+  { achv: 105, payout: 110 },
+  { achv: 110, payout: 120 },
+  { achv: 115, payout: 130 },
+];
+
+function calcIncentive({ salary, target, actual, months }) {
+  const errs = [];
+  if (!salary || salary <= 0)          errs.push("Basic salary must be > 0");
+  if (!target || target <= 0)          errs.push("ROY target must be > 0");
+  if (actual === undefined || actual < 0) errs.push("Actual revenue cannot be negative");
+  if (!months || months < 1 || months > 7) errs.push("Months served must be 1–7");
+  if (errs.length) return { valid: false, errs };
+
+  const mo  = Math.floor(months);
+  const achv = (actual / target) * 100;
+  const base = salary * 0.20 * mo;
+
+  if (mo < 3)   return { valid: true, qualified: false, reason: `Only ${mo} month${mo>1?"s":""} served — minimum 3 required`, achv, base, payout: 0, final: 0, mo };
+  if (achv < 95) return { valid: true, qualified: false, reason: `Achievement ${achv.toFixed(1)}% is below 95% threshold`, achv, base, payout: 0, final: 0, mo };
+
+  let payout;
+  if (achv >= 115) {
+    payout = 130;
+  } else {
+    const upper = TIERS.find(t => t.achv >= achv);
+    const lower = [...TIERS].reverse().find(t => t.achv <= achv);
+    payout = (upper && lower && upper !== lower)
+      ? lower.payout + ((achv - lower.achv) / (upper.achv - lower.achv)) * (upper.payout - lower.payout)
+      : (lower?.payout ?? 50);
+  }
+
+  return { valid: true, qualified: true, achv, payout, base, final: base * (payout / 100), mo };
+}
+
+const DEPTS = [
+  { id: "sales", label: "Sales", sub: "Rooms Revenue",      icon: "dash"    },
+  { id: "hc",    label: "Health Club", sub: "HC Revenue",   icon: "report"  },
+  { id: "spa",   label: "SPA",   sub: "SPA Revenue",        icon: "star"    },
+  { id: "ce",    label: "C&E",   sub: "C&E Revenue",        icon: "docs"    },
+];
+
+function IncentivePage() {
+  const [deptId,  setDeptId]  = useState("sales");
+  const [mode,    setMode]    = useState("single"); // single | all
+  const [form,    setForm]    = useState({ salary: "", target: "", actual: "", months: "7" });
+  const [allForms, setAllForms] = useState({ sales:{target:"",actual:""}, hc:{target:"",actual:""}, spa:{target:"",actual:""}, ce:{target:"",actual:""} });
+  const [allSalary, setAllSalary] = useState("");
+  const [allMonths, setAllMonths] = useState("7");
+  const [result,  setResult]  = useState(null);
+  const [allResults, setAllResults] = useState(null);
+
+  const setF = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
+  const setAF = (d, k) => e => setAllForms(p => ({ ...p, [d]: { ...p[d], [k]: e.target.value } }));
+  const fmtN = n => isNaN(n) ? "—" : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtP = n => isNaN(n) ? "—" : n.toFixed(1) + "%";
+
+  const tierColor = (a) => a >= 115 ? "var(--purple)" : a >= 110 ? "var(--blue)" : a >= 105 ? "var(--green)" : a >= 100 ? "var(--green)" : a >= 95 ? "var(--gold)" : "var(--red)";
+
+  const runSingle = () => {
+    const r = calcIncentive({ salary: +form.salary, target: +form.target, actual: +form.actual, months: +form.months });
+    setResult(r);
+  };
+
+  const runAll = () => {
+    const results = DEPTS.map(d => ({
+      dept: d,
+      r: calcIncentive({ salary: +allSalary, target: +allForms[d.id].target, actual: +allForms[d.id].actual, months: +allMonths }),
+    }));
+    setAllResults(results);
+  };
+
+  const dept = DEPTS.find(d => d.id === deptId);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Incentive Calculator</div>
+        <div className="page-sub">Performance-based incentive payout for department heads</div>
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{ display:"flex", gap:8, marginBottom:20 }}>
+        <button className={`btn ${mode==="single"?"btn-primary":"btn-ghost"}`} onClick={() => { setMode("single"); setResult(null); }} style={{ fontSize:12.5 }}>Single Department</button>
+        <button className={`btn ${mode==="all"?"btn-primary":"btn-ghost"}`} onClick={() => { setMode("all"); setAllResults(null); }} style={{ fontSize:12.5 }}>All Departments</button>
+      </div>
+
+      {mode === "single" && (
+        <div className="grid-2" style={{ alignItems:"start" }}>
+          {/* Left: inputs */}
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {/* Dept selector */}
+            <div className="card">
+              <div className="card-title mb-3">Department</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {DEPTS.map(d => (
+                  <button key={d.id} onClick={() => { setDeptId(d.id); setResult(null); }}
+                    style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 11px", borderRadius:"var(--r)", border:`1px solid ${deptId===d.id?"var(--gold)":"var(--border)"}`, background:deptId===d.id?"rgba(200,146,74,.07)":"transparent", cursor:"pointer", textAlign:"left", transition:"all .13s" }}>
+                    <IC n={d.icon} s={13} c={deptId===d.id?"var(--gold)":"var(--ink3)"} />
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:deptId===d.id?500:400, color:deptId===d.id?"var(--gold)":"var(--ink)", fontFamily:"var(--fb)" }}>{d.label}</div>
+                      <div style={{ fontSize:11, color:"var(--ink3)" }}>{d.sub}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Inputs */}
+            <div className="card">
+              <div className="card-title mb-3">Inputs</div>
+              <div className="input-group">
+                <div className="input-label">Basic Salary</div>
+                <input className="input" type="number" placeholder="e.g. 5000" value={form.salary} onChange={setF("salary")} min="0" />
+              </div>
+              <div className="input-group">
+                <div className="input-label">Months Served (1–7)</div>
+                <input className="input" type="number" placeholder="7" value={form.months} onChange={setF("months")} min="1" max="7" />
+              </div>
+              <div className="input-group">
+                <div className="input-label">{dept?.sub} — ROY Target</div>
+                <input className="input" type="number" placeholder="e.g. 1,000,000" value={form.target} onChange={setF("target")} min="0" />
+              </div>
+              <div className="input-group">
+                <div className="input-label">{dept?.sub} — Actual Achieved</div>
+                <input className="input" type="number" placeholder="e.g. 1,050,000" value={form.actual} onChange={setF("actual")} min="0" />
+              </div>
+              <button className="btn btn-primary mt-2" onClick={runSingle} style={{ width:"100%", justifyContent:"center", padding:"10px" }}>
+                <IC n="chart" s={13} /> Calculate Incentive
+              </button>
+            </div>
+          </div>
+
+          {/* Right: result */}
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {/* Result card */}
+            <div className="card" style={{ borderColor: result ? (result.qualified ? "rgba(76,175,125,.3)" : "rgba(224,92,92,.2)") : "var(--border)" }}>
+              <div className="card-title mb-3">Result</div>
+              {!result && (
+                <div className="empty-state" style={{ padding:"40px 0" }}>
+                  <div style={{ fontSize:32 }}>🧮</div>
+                  <div style={{ color:"var(--ink3)", fontSize:12.5, marginTop:8 }}>Enter values and calculate</div>
+                </div>
+              )}
+              {result && !result.valid && (
+                <div style={{ background:"rgba(224,92,92,.08)", border:"1px solid rgba(224,92,92,.2)", borderRadius:"var(--r)", padding:"12px 14px" }}>
+                  <div style={{ fontSize:12.5, color:"var(--red)" }}>{result.errs.join(" · ")}</div>
+                </div>
+              )}
+              {result && result.valid && (
+                <>
+                  {/* Status badge */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                    <span style={{ padding:"5px 12px", borderRadius:99, fontSize:12, fontWeight:600, background:result.qualified?"rgba(76,175,125,.12)":"rgba(224,92,92,.1)", color:result.qualified?"var(--green)":"var(--red)", border:`1px solid ${result.qualified?"rgba(76,175,125,.25)":"rgba(224,92,92,.2)"}` }}>
+                      {result.qualified ? "✓ Qualified" : "✗ Not Qualified"}
+                    </span>
+                    <span style={{ fontSize:11.5, color:"var(--ink3)" }}>{result.mo} months served</span>
+                  </div>
+
+                  {!result.qualified && (
+                    <div style={{ fontSize:12.5, color:"var(--ink3)", marginBottom:12, padding:"8px 12px", background:"var(--card2)", borderRadius:"var(--r)" }}>
+                      {result.reason}
+                    </div>
+                  )}
+
+                  {/* Metrics grid */}
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+                    {[
+                      { label:"Achievement %", val: fmtP(result.achv), color: result.qualified ? tierColor(result.achv) : "var(--red)" },
+                      { label:"Payout Rate",   val: result.qualified ? fmtP(result.payout) : "0%", color: result.qualified ? "var(--blue)" : "var(--ink3)" },
+                      { label:"Base Incentive", val: fmtN(result.base), color: "var(--ink)" },
+                      { label:"Final Incentive", val: result.qualified ? fmtN(result.final) : "0.00", color: result.qualified ? "var(--green)" : "var(--ink3)" },
+                    ].map((m, i) => (
+                      <div key={i} style={{ background:"var(--card2)", borderRadius:"var(--r)", padding:"12px 14px", border:"1px solid var(--border2)" }}>
+                        <div style={{ fontSize:11, color:"var(--ink3)", marginBottom:4 }}>{m.label}</div>
+                        <div style={{ fontSize:18, fontWeight:600, color:m.color, fontFamily:"var(--fm)" }}>{m.val}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Progress bar */}
+                  {(() => {
+                    const pct = Math.min(result.achv, 135);
+                    const pctWidth = Math.max(0, ((pct - 90) / (135 - 90)) * 100);
+                    return (
+                      <div>
+                        <div style={{ height:8, background:"var(--border)", borderRadius:99, overflow:"hidden", marginBottom:4 }}>
+                          <div style={{ height:"100%", width:`${pctWidth}%`, background: tierColor(result.achv), borderRadius:99, transition:"width .4s ease" }} />
+                        </div>
+                        <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"var(--ink3)" }}>
+                          <span>95%</span><span>100%</span><span>105%</span><span>110%</span><span>115%+</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+
+            {/* Tier table */}
+            <div className="card">
+              <div className="card-title mb-3">Achievement Tiers</div>
+              {[
+                { range:"Below 95%", payout:"0% — no incentive", min:0,   max:95,  c:"var(--red)"    },
+                { range:"95%",       payout:"50%",               min:95,  max:100, c:"var(--gold)"   },
+                { range:"100%",      payout:"100%",              min:100, max:105, c:"var(--green)"  },
+                { range:"105%",      payout:"110%",              min:105, max:110, c:"var(--blue)"   },
+                { range:"110%",      payout:"120%",              min:110, max:115, c:"var(--purple)" },
+                { range:"115%+",     payout:"130% (capped)",     min:115, max:999, c:"var(--purple)" },
+              ].map((t, i) => {
+                const active = result?.valid && result.achv >= t.min && result.achv < t.max;
+                return (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 10px", borderRadius:"var(--r)", border:`1px solid ${active?"var(--gold)":"transparent"}`, background:active?"rgba(200,146,74,.06)":"transparent", marginBottom:3 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:t.c, flexShrink:0 }} />
+                    <div style={{ flex:1, fontSize:12.5, color:"var(--ink2)" }}>{t.range}</div>
+                    <div style={{ fontSize:12.5, color:active?"var(--gold)":"var(--ink3)", fontWeight:active?500:400 }}>{t.payout}</div>
+                    {active && <span style={{ fontSize:10, color:"var(--gold)" }}>◄</span>}
+                  </div>
+                );
+              })}
+              <div style={{ marginTop:12, padding:"10px 12px", background:"var(--card2)", borderRadius:"var(--r)", fontSize:11.5, color:"var(--ink3)", lineHeight:1.7 }}>
+                Interpolation: linear between tiers<br/>
+                Pro-ration: min. 3 months to qualify
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All departments mode */}
+      {mode === "all" && (
+        <div className="grid-2" style={{ alignItems:"start" }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            <div className="card">
+              <div className="card-title mb-3">Shared Inputs</div>
+              <div className="input-group">
+                <div className="input-label">Basic Salary</div>
+                <input className="input" type="number" placeholder="e.g. 5000" value={allSalary} onChange={e => setAllSalary(e.target.value)} min="0" />
+              </div>
+              <div className="input-group">
+                <div className="input-label">Months Served (1–7)</div>
+                <input className="input" type="number" placeholder="7" value={allMonths} onChange={e => setAllMonths(e.target.value)} min="1" max="7" />
+              </div>
+            </div>
+
+            {DEPTS.map(d => (
+              <div key={d.id} className="card">
+                <div className="flex items-center gap-2 mb-3">
+                  <IC n={d.icon} s={13} c="var(--gold)" />
+                  <div className="card-title">{d.label} — {d.sub}</div>
+                </div>
+                <div className="input-group">
+                  <div className="input-label">ROY Target</div>
+                  <input className="input" type="number" placeholder="Budget target" value={allForms[d.id].target} onChange={setAF(d.id, "target")} min="0" />
+                </div>
+                <div className="input-group">
+                  <div className="input-label">Actual Achieved</div>
+                  <input className="input" type="number" placeholder="Actual revenue" value={allForms[d.id].actual} onChange={setAF(d.id, "actual")} min="0" />
+                </div>
+              </div>
+            ))}
+
+            <button className="btn btn-primary" onClick={runAll} style={{ width:"100%", justifyContent:"center", padding:"11px" }}>
+              <IC n="chart" s={13} /> Calculate All Departments
+            </button>
+          </div>
+
+          {/* All results */}
+          <div className="card" style={{ minHeight:400 }}>
+            <div className="card-title mb-3">Results</div>
+            {!allResults && (
+              <div className="empty-state" style={{ padding:"48px 0" }}>
+                <div style={{ fontSize:32 }}>📊</div>
+                <div style={{ color:"var(--ink3)", fontSize:12.5, marginTop:8 }}>Fill inputs and calculate</div>
+              </div>
+            )}
+            {allResults && (
+              <>
+                {allResults.map(({ dept: d, r }, i) => (
+                  <div key={i} style={{ padding:"12px 14px", borderRadius:"var(--r)", border:`1px solid ${r.valid&&r.qualified?"rgba(76,175,125,.2)":"rgba(224,92,92,.15)"}`, background:r.valid&&r.qualified?"rgba(76,175,125,.04)":"rgba(224,92,92,.03)", marginBottom:8 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <IC n={d.icon} s={13} c="var(--gold)" />
+                        <span style={{ fontWeight:500, fontSize:13, color:"var(--ink)", fontFamily:"var(--fb)" }}>{d.label}</span>
+                        <span style={{ fontSize:11, color:"var(--ink3)" }}>{d.sub}</span>
+                      </div>
+                      <span style={{ fontSize:11.5, fontWeight:600, padding:"3px 10px", borderRadius:99, background:r.valid&&r.qualified?"rgba(76,175,125,.12)":"rgba(224,92,92,.1)", color:r.valid&&r.qualified?"var(--green)":"var(--red)" }}>
+                        {r.valid ? (r.qualified ? "Qualified" : "Not qualified") : "Input error"}
+                      </span>
+                    </div>
+                    {r.valid && (
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
+                        {[
+                          { l:"Achievement", v: fmtP(r.achv),  c: r.qualified ? tierColor(r.achv) : "var(--red)" },
+                          { l:"Payout %",    v: r.qualified ? fmtP(r.payout) : "0%", c:"var(--ink2)" },
+                          { l:"Base",        v: fmtN(r.base),  c:"var(--ink2)" },
+                          { l:"Final",       v: r.qualified ? fmtN(r.final) : "0.00", c: r.qualified ? "var(--green)" : "var(--ink3)" },
+                        ].map((m, j) => (
+                          <div key={j}>
+                            <div style={{ fontSize:10.5, color:"var(--ink3)", marginBottom:2 }}>{m.l}</div>
+                            <div style={{ fontSize:13.5, fontWeight:600, color:m.c, fontFamily:"var(--fm)" }}>{m.v}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {!r.valid && <div style={{ fontSize:12, color:"var(--red)" }}>{r.errs?.join(" · ")}</div>}
+                    {r.valid && !r.qualified && <div style={{ fontSize:11.5, color:"var(--ink3)", marginTop:6 }}>{r.reason}</div>}
+                  </div>
+                ))}
+                {/* Total */}
+                {(() => {
+                  const q = allResults.filter(x => x.r.valid && x.r.qualified);
+                  const total = q.reduce((s, x) => s + x.r.final, 0);
+                  return (
+                    <div style={{ borderTop:"1px solid var(--border)", paddingTop:12, display:"flex", justifyContent:"space-between", fontSize:13 }}>
+                      <span style={{ color:"var(--ink3)" }}>{q.length} of {allResults.length} departments qualified</span>
+                      <span style={{ fontWeight:600, color:"var(--green)", fontFamily:"var(--fm)" }}>Total: {fmtN(total)}</span>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── App Shell ────────────────────────────────────────────────────
 export default function App() {
   const [user,        setUser]        = useState(null);
@@ -1457,6 +1789,7 @@ export default function App() {
     { id: "projects",  label: "Projects",   icon: "folder", badge: projectCount || null },
     { id: "analyze",   label: "AI Analysis",icon: "ai"       },
     { id: "reports",   label: "Reports",    icon: "report"   },
+    { id: "incentive", label: "Incentives", icon: "chart"    },
     { id: "settings",  label: "Settings",   icon: "settings" },
   ];
 
@@ -1516,6 +1849,7 @@ export default function App() {
           {page === "analyze"   && <AnalyzePage   user={user} docs={docs} setDocs={setDocs} toast={toast} selectedDoc={selectedDoc} setSelectedDoc={setSelectedDoc} />}
           {page === "projects"  && <ProjectsPage  user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
           {page === "reports"   && <ReportsPage   user={user} docs={docs} toast={toast} />}
+          {page === "incentive" && <IncentivePage />}
           {page === "settings"  && <SettingsPage  user={user} toast={toast} />}
         </div>
       </main>
