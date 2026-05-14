@@ -10,14 +10,58 @@ import AuthScreen from "./AuthScreen";
    Design: Dark editorial-financial
 ═══════════════════════════════════════════════════════════════════ */
 
+// ─── Excel to Text Parser ─────────────────────────────────────────
+async function excelToText(base64Data) {
+  try {
+    // Dynamically import SheetJS
+    const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const wb = XLSX.read(bytes, { type: "array" });
+    let text = "";
+    wb.SheetNames.forEach(name => {
+      text += `\n=== Sheet: ${name} ===\n`;
+      const ws = wb.Sheets[name];
+      text += XLSX.utils.sheet_to_csv(ws);
+    });
+    return text.slice(0, 30000); // cap at 30k chars
+  } catch {
+    return "[Excel file — could not parse content]";
+  }
+}
+
 // ─── Gemini Service ───────────────────────────────────────────────
+const SUPPORTED_MIME = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif", "text/plain"];
+
 const gemini = {
   async analyze(prompt, fileData = null) {
     const key = import.meta.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("VITE_GEMINI_API_KEY not configured");
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
     const parts = [{ text: prompt }];
-    if (fileData) parts.unshift({ inlineData: { mimeType: fileData.mimeType, data: fileData.data } });
+
+    if (fileData) {
+      const mime = fileData.mimeType || "";
+      const isExcel = mime.includes("spreadsheet") || mime.includes("excel") || mime.includes("csv");
+      const isWord  = mime.includes("wordprocessing") || mime.includes("msword");
+
+      if (isExcel) {
+        // Convert Excel to CSV text and append to prompt
+        const csvText = await excelToText(fileData.data);
+        parts[0] = { text: `${prompt}\n\nFile contents (Excel/CSV):\n${csvText}` };
+      } else if (isWord) {
+        // Word docs: send as text hint
+        parts[0] = { text: `${prompt}\n\n[Word document uploaded — analyze based on filename and context]` };
+      } else if (SUPPORTED_MIME.includes(mime) || mime.startsWith("image/")) {
+        // PDF and images: send as inlineData
+        parts.unshift({ inlineData: { mimeType: mime, data: fileData.data } });
+      } else {
+        // Fallback: just mention the file
+        parts[0] = { text: `${prompt}\n\n[File uploaded: ${mime}]` };
+      }
+    }
+
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
