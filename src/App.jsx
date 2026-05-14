@@ -5,7 +5,7 @@ import AuthScreen from "./AuthScreen";
 /* ═══════════════════════════════════════════════════════════════════
    EXFINANALYZE — Production SaaS Platform
    Auth: Supabase Auth (real backend)
-   AI:   Gemini 1.5 Flash Latest via VITE_GEMINI_API_KEY
+   AI:   Gemini 2.0 Flash via VITE_GEMINI_API_KEY
    Docs: Supabase Storage + local fallback
    Design: Dark editorial-financial
 ═══════════════════════════════════════════════════════════════════ */
@@ -560,7 +560,7 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
     <div>
       <div className="page-header">
         <div className="page-title">AI Analysis</div>
-        <div className="page-sub">Gemini 1.5 Flash Latest — free tier · no extra cost</div>
+        <div className="page-sub">Gemini 2.0 Flash — free tier · no extra cost</div>
       </div>
 
       <div className="grid-2" style={{ alignItems: "start" }}>
