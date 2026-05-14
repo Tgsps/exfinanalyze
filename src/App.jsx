@@ -15,7 +15,7 @@ const gemini = {
   async analyze(prompt, fileData = null) {
     const key = import.meta.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("VITE_GEMINI_API_KEY not configured");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
     const parts = [{ text: prompt }];
     if (fileData) parts.unshift({ inlineData: { mimeType: fileData.mimeType, data: fileData.data } });
     const res = await fetch(url, {
