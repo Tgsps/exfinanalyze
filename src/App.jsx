@@ -288,6 +288,7 @@ const IC = ({ n, s = 16, c = "currentColor" }) => {
     refresh: <><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></>,
     users: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></>,
     arrow: <><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
+    folder: <><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></>,
   };
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -790,12 +791,24 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
 
 // ─── Reports ──────────────────────────────────────────────────────
 function ReportsPage({ user, docs, toast }) {
-  const [type,    setType]    = useState("monthly");
-  const [output,  setOutput]  = useState("");
-  const [busy,    setBusy]    = useState(false);
-  const [pdfUrl,  setPdfUrl]  = useState(null);
-  const [pdfName, setPdfName] = useState("");
-  const analyzed = docs.filter(d => d.status === "analyzed");
+  const [type,      setType]      = useState("monthly");
+  const [output,    setOutput]    = useState("");
+  const [busy,      setBusy]      = useState(false);
+  const [pdfUrl,    setPdfUrl]    = useState(null);
+  const [pdfName,   setPdfName]   = useState("");
+  const [projectId, setProjectId] = useState("all");
+
+  const projects  = projectStore.get(user.id);
+  const userName  = user.user_metadata?.name || user.email?.split("@")[0] || "Unknown";
+  const userRole  = user.user_metadata?.role || "Analyst";
+
+  const selectedDocs = projectId === "all"
+    ? docs
+    : docs.filter(d => {
+        const p = projects.find(x => x.id === projectId);
+        return p?.docIds.includes(d.id);
+      });
+  const analyzed = selectedDocs.filter(d => d.status === "analyzed");
 
   const TYPES = [
     { id: "monthly", label: "Monthly Close Report",  desc: "Full summary for CFO review",   icon: "📊", color: "#C8924A" },
@@ -878,20 +891,18 @@ function ReportsPage({ user, docs, toast }) {
 </div>
 <div class="body">
 ${lines.map(line => {
-  const clean = line.replace(/\*\*/g,"").trim();
+  const clean = line.replace(/\*\*/g,"").replace(/\*/g,"").trim();
   if (!clean) return "<br/>";
-  if (line.startsWith("# ") || line.match(/^#{1}\s/)) return `<h1>${clean.replace(/^#+\s*/,"")}</h1>`;
-  if (line.startsWith("## ") || line.match(/^#{2}\s/)) return `<h2>${clean.replace(/^#+\s*/,"")}</h2>`;
-  if (line.startsWith("### ") || line.match(/^#{3}\s/)) return `<h3>${clean.replace(/^#+\s*/,"")}</h3>`;
-  if (line.match(/^[-*•]\s/)) return `<ul><li>${clean.replace(/^[-*•]\s*/,"")}</li></ul>`;
-  if (line.match(/^\d+\.\s/)) return `<ul><li>${clean}</li></ul>`;
-  if (clean.match(/critical/i)) return `<p class="risk-critical">⚠ ${clean}</p>`;
-  if (clean.match(/high risk/i)) return `<p class="risk-high">▲ ${clean}</p>`;
-  if (clean.length < 80 && clean.endsWith(":")) return `<h3>${clean}</h3>`;
+  if (line.match(/^# (?!#)/))   return `<h1>${clean.replace(/^#+\s*/,"")}</h1>`;
+  if (line.match(/^## (?!#)/))  return `<h2>${clean.replace(/^#+\s*/,"")}</h2>`;
+  if (line.match(/^### /))      return `<h3>${clean.replace(/^#+\s*/,"")}</h3>`;
+  if (line.match(/^[-*•] /))    return `<ul><li>${clean.replace(/^[-*•]\s*/,"")}</li></ul>`;
+  if (line.match(/^\d+\. /))    return `<ol><li>${clean.replace(/^\d+\.\s*/,"")}</li></ol>`;
+  if (clean.length < 90 && clean.endsWith(":") && !clean.includes(".")) return `<h3>${clean}</h3>`;
   return `<p>${clean}</p>`;
 }).join("\n")}
 <div class="footer">
-  <span>ExFinAnalyze · AI-Powered Financial Intelligence · Confidential</span>
+  <span>ExFinAnalyze · Confidential</span>
   <span>${new Date().getFullYear()}</span>
 </div>
 </div>
@@ -972,9 +983,17 @@ ${output.split("\n").map(l => {
 
           <div className="card">
             <div className="card-title mb-2">Data Sources</div>
-            <div className="card-sub mb-3">{analyzed.length} / {docs.length} documents ready</div>
-            <div className="progress mb-2"><div className="progress-bar" style={{ width: `${docs.length?analyzed.length/docs.length*100:0}%` }} /></div>
-            <div className="text-muted">{docs.length-analyzed.length} pending analysis</div>
+            <div className="input-group mt-2">
+              <div className="input-label">Project Filter</div>
+              <select className="input select" value={projectId} onChange={e => { setProjectId(e.target.value); setPdfUrl(null); setOutput(""); }}>
+                <option value="all">All Documents ({docs.length})</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({docs.filter(d=>p.docIds.includes(d.id)).length} docs)</option>
+                ))}
+              </select>
+            </div>
+            <div className="card-sub mt-3 mb-2">{analyzed.length} analyzed · {selectedDocs.length - analyzed.length} pending</div>
+            <div className="progress mb-2"><div className="progress-bar" style={{ width: `${selectedDocs.length?analyzed.length/selectedDocs.length*100:0}%` }} /></div>
           </div>
 
           <button className="btn btn-primary" onClick={generate} disabled={busy||analyzed.length===0} style={{ justifyContent: "center", width: "100%", padding: "11px" }}>
@@ -1033,6 +1052,250 @@ ${output.split("\n").map(l => {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Project Store ────────────────────────────────────────────────
+const projectStore = {
+  key(userId) { return `exfin_projects_${userId}`; },
+  get(userId) {
+    try { return JSON.parse(localStorage.getItem(this.key(userId)) || "[]"); }
+    catch { return []; }
+  },
+  save(userId, projects) { localStorage.setItem(this.key(userId), JSON.stringify(projects)); },
+  add(userId, project) {
+    const list = this.get(userId);
+    this.save(userId, [project, ...list]);
+    return project;
+  },
+  update(userId, id, patch) {
+    const list = this.get(userId).map(p => p.id === id ? { ...p, ...patch } : p);
+    this.save(userId, list);
+    return list.find(p => p.id === id);
+  },
+  remove(userId, id) {
+    this.save(userId, this.get(userId).filter(p => p.id !== id));
+  },
+};
+
+// ─── Projects Page ────────────────────────────────────────────────
+function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
+  const [projects,     setProjects]    = useState(() => projectStore.get(user.id));
+  const [showNew,      setShowNew]     = useState(false);
+  const [newName,      setNewName]     = useState("");
+  const [newDesc,      setNewDesc]     = useState("");
+  const [openProject,  setOpenProject] = useState(null);
+  const [addingDocs,   setAddingDocs]  = useState(false);
+
+  const refresh = () => setProjects(projectStore.get(user.id));
+
+  const createProject = () => {
+    if (!newName.trim()) return;
+    const colors = ["#C8924A","#4CAF7D","#5C9BE0","#A06BB8","#E05C5C"];
+    const p = {
+      id: `proj-${Date.now()}`,
+      name: newName.trim(),
+      desc: newDesc.trim(),
+      docIds: [],
+      createdAt: new Date().toISOString(),
+      color: colors[Math.floor(Math.random()*colors.length)],
+    };
+    projectStore.add(user.id, p);
+    refresh();
+    setNewName(""); setNewDesc(""); setShowNew(false);
+    toast(`Project "${p.name}" created`, "success");
+  };
+
+  const deleteProject = (id) => {
+    projectStore.remove(user.id, id);
+    refresh();
+    if (openProject?.id === id) setOpenProject(null);
+    toast("Project deleted", "info");
+  };
+
+  const toggleDoc = (projectId, docId) => {
+    const proj = projectStore.get(user.id).find(x => x.id === projectId);
+    const docIds = proj.docIds.includes(docId)
+      ? proj.docIds.filter(d => d !== docId)
+      : [...proj.docIds, docId];
+    projectStore.update(user.id, projectId, { docIds });
+    refresh();
+    setOpenProject(projectStore.get(user.id).find(x => x.id === projectId));
+  };
+
+  const projectDocs = (p) => docs.filter(d => p.docIds.includes(d.id));
+
+  // ─── Project detail ───
+  if (openProject) {
+    const p = projectStore.get(user.id).find(x => x.id === openProject.id) || openProject;
+    const pDocs = projectDocs(p);
+
+    return (
+      <div>
+        <div className="page-header" style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => { setOpenProject(null); setAddingDocs(false); }}>← Back</button>
+          <div>
+            <div className="page-title" style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ width:10, height:10, borderRadius:"50%", background:p.color, display:"inline-block" }}/>
+              {p.name}
+            </div>
+            {p.desc && <div className="page-sub">{p.desc}</div>}
+          </div>
+        </div>
+
+        <div className="grid-2" style={{ alignItems:"start" }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            <div className="card">
+              <div className="flex items-center justify-between mb-3">
+                <div className="card-title">Documents ({pDocs.length})</div>
+                <button className="btn btn-primary btn-sm" onClick={() => setAddingDocs(!addingDocs)}>
+                  {addingDocs ? "Done" : "+ Add Documents"}
+                </button>
+              </div>
+
+              {addingDocs && (
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:11.5, color:"var(--ink3)", marginBottom:10 }}>Select documents to include:</div>
+                  {docs.length === 0
+                    ? <div style={{ fontSize:12, color:"var(--ink3)" }}>No documents — upload from Documents page first</div>
+                    : docs.map(d => (
+                      <div key={d.id} onClick={() => toggleDoc(p.id, d.id)}
+                        style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:"var(--r)", border:`1px solid ${p.docIds.includes(d.id)?"var(--gold)":"var(--border)"}`, background:p.docIds.includes(d.id)?"rgba(200,146,74,.07)":"transparent", cursor:"pointer", marginBottom:6, transition:"all .13s" }}>
+                        <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${p.docIds.includes(d.id)?"var(--gold)":"var(--border2)"}`, background:p.docIds.includes(d.id)?"var(--gold)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          {p.docIds.includes(d.id) && <span style={{ fontSize:9, color:"#000", fontWeight:700 }}>✓</span>}
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:12.5, color:"var(--ink)", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{d.name}</div>
+                          <div style={{ fontSize:10.5, color:"var(--ink3)" }}>{d.type} · <span style={{ color:d.status==="analyzed"?"var(--green)":"var(--gold)" }}>{d.status}</span></div>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+
+              {!addingDocs && pDocs.length === 0 && (
+                <div className="empty-state" style={{ padding:"28px 0" }}>
+                  <div style={{ fontSize:26 }}>📁</div>
+                  <div style={{ color:"var(--ink3)", fontSize:12, marginTop:8 }}>No documents in this project</div>
+                  <button className="btn btn-ghost btn-sm mt-3" onClick={() => setAddingDocs(true)}>+ Add Documents</button>
+                </div>
+              )}
+
+              {!addingDocs && pDocs.map(d => (
+                <div key={d.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:"var(--r)", border:"1px solid var(--border)", marginBottom:6 }}>
+                  <div style={{ width:28, height:28, borderRadius:5, background:"rgba(200,146,74,.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <IC n={d.type==="excel"?"excel":d.type==="contract"?"contract":"pdf"} s={12} c="var(--gold)" />
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:12.5, color:"var(--ink)", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{d.name}</div>
+                    <div style={{ fontSize:10.5, color:"var(--ink3)" }}>{d.type} · <span style={{ color:d.status==="analyzed"?"var(--green)":"var(--gold)" }}>{d.status}</span></div>
+                  </div>
+                  <div style={{ display:"flex", gap:5 }}>
+                    <button className="btn btn-ghost btn-sm btn-icon" title="Analyze" onClick={() => { setSelectedDoc(d); setPage("analyze"); }}><IC n="ai" s={12} /></button>
+                    <button className="btn btn-ghost btn-sm btn-icon" title="Remove" onClick={() => toggleDoc(p.id, d.id)} style={{ color:"var(--red)" }}><IC n="trash" s={12} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            <div className="card">
+              <div className="card-title mb-3">Project Stats</div>
+              {[
+                { label:"Total Documents",  val:pDocs.length },
+                { label:"Analyzed",         val:pDocs.filter(d=>d.status==="analyzed").length },
+                { label:"Pending",          val:pDocs.filter(d=>d.status==="pending").length },
+                { label:"High Risk Items",  val:pDocs.filter(d=>d.riskLevel==="high").length },
+                { label:"Created",          val:new Date(p.createdAt).toLocaleDateString() },
+              ].map((s,i) => (
+                <div key={i} className="flex items-center justify-between" style={{ padding:"8px 0", borderBottom:"1px solid var(--border)" }}>
+                  <span style={{ fontSize:12, color:"var(--ink3)" }}>{s.label}</span>
+                  <span style={{ fontSize:12, fontWeight:600, color:"var(--ink)", fontFamily:"var(--fm)" }}>{s.val}</span>
+                </div>
+              ))}
+            </div>
+            <button className="btn btn-primary" onClick={() => setPage("reports")} style={{ justifyContent:"center", width:"100%" }}>
+              <IC n="report" s={13} /> Generate Report for This Project
+            </button>
+            <button className="btn btn-danger" onClick={() => deleteProject(p.id)} style={{ justifyContent:"center", width:"100%" }}>
+              <IC n="trash" s={13} /> Delete Project
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Projects list ───
+  return (
+    <div>
+      <div className="page-header" style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div>
+          <div className="page-title">Projects</div>
+          <div className="page-sub">Organize documents and generate targeted reports</div>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowNew(true)}>+ New Project</button>
+      </div>
+
+      {showNew && (
+        <div className="card mb-4" style={{ borderColor:"rgba(200,146,74,.3)", marginBottom:16 }}>
+          <div className="card-title mb-3">New Project</div>
+          <div className="input-group">
+            <div className="input-label">Project Name *</div>
+            <input className="input" placeholder="e.g. Bedroom Costs, Q3 Audit..." value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key==="Enter" && createProject()} autoFocus />
+          </div>
+          <div className="input-group">
+            <div className="input-label">Description (optional)</div>
+            <input className="input" placeholder="Brief description..." value={newDesc} onChange={e => setNewDesc(e.target.value)} />
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button className="btn btn-primary" onClick={createProject} disabled={!newName.trim()}>Create Project</button>
+            <button className="btn btn-ghost" onClick={() => { setShowNew(false); setNewName(""); setNewDesc(""); }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {projects.length === 0 && !showNew ? (
+        <div className="card">
+          <div className="empty-state" style={{ padding:"60px 0" }}>
+            <div className="empty-icon">🗂️</div>
+            <div style={{ color:"var(--ink2)", fontSize:14, fontWeight:500 }}>No projects yet</div>
+            <div className="text-muted mt-2">Create a project to organize documents and generate targeted reports</div>
+            <button className="btn btn-primary mt-4" onClick={() => setShowNew(true)}>+ Create First Project</button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:14 }}>
+          {projects.map(p => {
+            const pDocs = projectDocs(p);
+            const analyzed = pDocs.filter(d=>d.status==="analyzed").length;
+            return (
+              <div key={p.id} className="card" style={{ cursor:"pointer", transition:"all .15s" }}
+                onClick={() => setOpenProject(p)}
+                onMouseEnter={e => e.currentTarget.style.borderColor=p.color}
+                onMouseLeave={e => e.currentTarget.style.borderColor="var(--border)"}
+              >
+                <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:12 }}>
+                  <div style={{ width:36, height:36, borderRadius:8, background:`${p.color}20`, border:`1.5px solid ${p.color}40`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <span style={{ fontSize:18 }}>🗂️</span>
+                  </div>
+                  <span style={{ fontSize:10.5, color:"var(--ink3)" }}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div style={{ fontFamily:"var(--fs)", fontSize:14, fontWeight:600, color:"var(--ink)", marginBottom:4 }}>{p.name}</div>
+                {p.desc && <div style={{ fontSize:12, color:"var(--ink3)", marginBottom:12, lineHeight:1.5 }}>{p.desc}</div>}
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                  <span className="badge" style={{ background:`${p.color}15`, color:p.color, borderColor:`${p.color}30`, fontSize:10.5 }}>{pDocs.length} docs</span>
+                  {analyzed > 0 && <span className="badge badge-green" style={{ fontSize:10.5 }}>{analyzed} analyzed</span>}
+                  {pDocs.filter(d=>d.riskLevel==="high").length > 0 && <span className="badge badge-red" style={{ fontSize:10.5 }}>⚠ high risk</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1187,9 +1450,11 @@ export default function App() {
   const initials = name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
   const pending  = docs.filter(d => d.status === "pending").length;
 
+  const projectCount = projectStore.get(user.id).length;
   const NAV = [
     { id: "dashboard", label: "Dashboard",  icon: "dash"     },
     { id: "documents", label: "Documents",  icon: "docs",  badge: pending || null },
+    { id: "projects",  label: "Projects",   icon: "folder", badge: projectCount || null },
     { id: "analyze",   label: "AI Analysis",icon: "ai"       },
     { id: "reports",   label: "Reports",    icon: "report"   },
     { id: "settings",  label: "Settings",   icon: "settings" },
@@ -1249,6 +1514,7 @@ export default function App() {
           {page === "dashboard" && <Dashboard  user={user} docs={docs} setPage={setPage} />}
           {page === "documents" && <DocumentsPage user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
           {page === "analyze"   && <AnalyzePage   user={user} docs={docs} setDocs={setDocs} toast={toast} selectedDoc={selectedDoc} setSelectedDoc={setSelectedDoc} />}
+          {page === "projects"  && <ProjectsPage  user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
           {page === "reports"   && <ReportsPage   user={user} docs={docs} toast={toast} />}
           {page === "settings"  && <SettingsPage  user={user} toast={toast} />}
         </div>
