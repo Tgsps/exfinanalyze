@@ -41,11 +41,12 @@ npm run dev
 Run this SQL in your Supabase project → SQL Editor:
 
 ```sql
+-- ── Table ──────────────────────────────────────────────────────────
 CREATE TABLE public.waitlist (
   id          BIGSERIAL PRIMARY KEY,
   position    BIGINT,
   name        TEXT NOT NULL,
-  email       TEXT NOT NULL UNIQUE,
+  email       TEXT NOT NULL UNIQUE CHECK (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   role        TEXT NOT NULL,
   company     TEXT,
   size        TEXT NOT NULL,
@@ -53,11 +54,15 @@ CREATE TABLE public.waitlist (
 );
 
 CREATE INDEX waitlist_email_idx ON public.waitlist (LOWER(email));
+CREATE INDEX waitlist_position_idx ON public.waitlist (position);
+
+-- ── Position: use a sequence (no race condition) ───────────────────
+CREATE SEQUENCE IF NOT EXISTS waitlist_position_seq START 1;
 
 CREATE OR REPLACE FUNCTION set_waitlist_position()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.position := (SELECT COUNT(*) FROM public.waitlist) + 1;
+  NEW.position := nextval('waitlist_position_seq');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -66,9 +71,36 @@ CREATE TRIGGER waitlist_position_trigger
 BEFORE INSERT ON public.waitlist
 FOR EACH ROW EXECUTE FUNCTION set_waitlist_position();
 
+-- ── Row Level Security ─────────────────────────────────────────────
 ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "allow_anon_insert" ON public.waitlist FOR INSERT TO anon WITH CHECK (true);
-CREATE POLICY "allow_anon_select" ON public.waitlist FOR SELECT TO anon USING (true);
+
+-- Anon: insert only (no PII read)
+CREATE POLICY "anon_insert" ON public.waitlist
+  FOR INSERT TO anon WITH CHECK (true);
+
+-- Authenticated admin: full read + delete
+CREATE POLICY "admin_select" ON public.waitlist
+  FOR SELECT TO authenticated
+  USING (auth.jwt()->'app_metadata'->>'role' = 'admin');
+
+CREATE POLICY "admin_delete" ON public.waitlist
+  FOR DELETE TO authenticated
+  USING (auth.jwt()->'app_metadata'->>'role' = 'admin');
+
+-- ── Public count RPC (no PII exposed) ─────────────────────────────
+CREATE OR REPLACE FUNCTION get_waitlist_count()
+RETURNS BIGINT LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT COUNT(*) FROM public.waitlist;
+$$;
+GRANT EXECUTE ON FUNCTION get_waitlist_count() TO anon;
+```
+
+### Set admin role on a user
+After creating an admin account in Supabase Auth, run:
+```sql
+UPDATE auth.users
+SET raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'::jsonb
+WHERE email = 'your-admin@email.com';
 ```
 
 ## Admin Panel

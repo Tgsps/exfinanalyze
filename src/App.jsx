@@ -10,35 +10,35 @@ import AuthScreen from "./AuthScreen";
    Design: Dark editorial-financial
 ═══════════════════════════════════════════════════════════════════ */
 
-// ─── Excel to Text Parser ─────────────────────────────────────────
+// ─── Excel to Text Parser (ExcelJS — no CDN, no supply-chain risk) ──
 async function excelToText(base64Data) {
   try {
-    // Dynamically import SheetJS
-    const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+    const ExcelJS = (await import("exceljs")).default;
     const binary = atob(base64Data);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const wb = XLSX.read(bytes, { type: "array" });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(bytes.buffer);
     let text = "";
-    wb.SheetNames.forEach(name => {
-      text += `\n=== Sheet: ${name} ===\n`;
-      const ws = wb.Sheets[name];
-      text += XLSX.utils.sheet_to_csv(ws);
+    workbook.eachSheet((sheet) => {
+      text += `\n=== Sheet: ${sheet.name} ===\n`;
+      sheet.eachRow((row) => {
+        text += (row.values.slice(1).map(v => v ?? "")).join(",") + "\n";
+      });
     });
-    return text.slice(0, 30000); // cap at 30k chars
+    return text.slice(0, 30000);
   } catch {
     return "[Excel file — could not parse content]";
   }
 }
 
 // ─── Gemini Service ───────────────────────────────────────────────
+// API key is kept server-side in the Supabase Edge Function.
+// Client sends the user JWT; the function verifies auth before calling Gemini.
 const SUPPORTED_MIME = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif", "text/plain"];
 
 const gemini = {
   async analyze(prompt, fileData = null) {
-    const key = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!key) throw new Error("VITE_GEMINI_API_KEY not configured");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
     const parts = [{ text: prompt }];
 
     if (fileData) {
@@ -47,29 +47,31 @@ const gemini = {
       const isWord  = mime.includes("wordprocessing") || mime.includes("msword");
 
       if (isExcel) {
-        // Convert Excel to CSV text and append to prompt
         const csvText = await excelToText(fileData.data);
         parts[0] = { text: `${prompt}\n\nFile contents (Excel/CSV):\n${csvText}` };
       } else if (isWord) {
-        // Word docs: send as text hint
         parts[0] = { text: `${prompt}\n\n[Word document uploaded — analyze based on filename and context]` };
       } else if (SUPPORTED_MIME.includes(mime) || mime.startsWith("image/")) {
-        // PDF and images: send as inlineData
         parts.unshift({ inlineData: { mimeType: mime, data: fileData.data } });
       } else {
-        // Fallback: just mention the file
         parts[0] = { text: `${prompt}\n\n[File uploaded: ${mime}]` };
       }
     }
 
-    const res = await fetch(url, {
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) throw new Error("Not authenticated");
+
+    const res = await fetch("/.netlify/functions/ai-analyze", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify({ contents: [{ parts }], generationConfig: { maxOutputTokens: 2048 } }),
     });
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err?.error?.message || "Gemini API error");
+      throw new Error(err?.error || "AI service error");
     }
     const data = await res.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";

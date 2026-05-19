@@ -270,7 +270,9 @@ function ExtractionView({ extractStep, setExtractStep, setActiveView }) {
                   <div className="h-1 bg-[#D4A574] w-2/3 ring-1 ring-[#A67C4E]" />
                 </div>
                 <div className="mt-3 space-y-1">
-                  {[...Array(8)].map((_, i) => <div key={i} className="h-1 bg-[#E8E4DA]" style={{ width: `${60 + Math.random() * 40}%` }} />)}
+                  {["w-4/5","w-full","w-3/4","w-5/6","w-2/3","w-full","w-4/5","w-3/5"].map((w, i) => (
+                    <div key={i} className={`h-1 bg-[#E8E4DA] ${w}`} />
+                  ))}
                 </div>
               </div>
               <div className="absolute bottom-2 right-2 text-[9px] text-[#8B8983] font-mono">Page 1 / 12</div>
