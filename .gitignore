@@ -6,3 +6,7 @@ build/
 .env.*.local
 .DS_Store
 *.log
+
+# Local dev / MCP secrets — never commit
+.mcp.json
+.claude/
