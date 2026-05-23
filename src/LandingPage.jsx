@@ -7,33 +7,15 @@ import MockExtract from "./components/mocks/MockExtract";
 import MockShadow from "./components/mocks/MockShadow";
 import MockClose from "./components/mocks/MockClose";
 
-/* ── Animations only — fonts are loaded via index.html <head> ── */
+/* Responsive overrides — everything else lives in index.css */
 const ANIM = `
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  :root{
-    --cream:#F7F4ED;--ink:#16140F;--ink-60:#5A574E;--ink-30:#B0ADA5;
-    --gold:#C8924A;--gold-l:#E8C88A;--gold-p:#F5ECD8;
-    --white:#FFFFFF;--warn:#9A3B2A;--green:#2C5F42;--border:#E0DAC8;
-    --s:0 2px 24px rgba(22,20,15,.08);--sl:0 8px 48px rgba(22,20,15,.14);
-    --fd:'Fraunces',Georgia,serif;--fb:'DM Sans',system-ui,sans-serif;--fm:'JetBrains Mono',monospace;
-  }
-  .wrap{max-width:1160px;margin:0 auto;padding:0 32px}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-  ::-webkit-scrollbar{width:5px}
-  ::-webkit-scrollbar-track{background:var(--cream)}
-  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   @media(max-width:768px){
     .hero-grid{grid-template-columns:1fr!important}
     .features-grid{grid-template-columns:1fr!important}
     .stats-grid{grid-template-columns:1fr!important}
     .pricing-grid{grid-template-columns:1fr!important}
     .waitlist-grid{grid-template-columns:1fr!important}
+    .testimonials-grid{grid-template-columns:1fr!important}
     .nav-links{display:none!important}
     .hero-mock{display:none!important}
   }
@@ -264,6 +246,35 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section style={{ padding: "80px 40px", background: "var(--ink)" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 52 }}>
+            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>Early Testers</div>
+            <h2 style={{ fontFamily: "var(--fd)", fontSize: 36, fontWeight: 500, letterSpacing: "-0.025em", color: "#E8E6DF", margin: 0 }}>What reviewers are saying</h2>
+          </div>
+          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+            {[
+              ["The Shadow Reviewer is unlike anything I've seen. My junior team is finally learning on the job instead of making the same mistakes twice.", "Marcus K.", "Controller, SaaS startup (Series B)", "MK", "#2C5F42"],
+              ["Month-end used to take our team 6 days. The narrative generator alone saves us 4-5 hours every close cycle.", "Sarah L.", "Senior Accountant, Regional CPA Firm", "SL", "#9A3B2A"],
+              ["We reviewed the lease extraction against our manual workpapers. 97% match on 80+ fields. The source citations made it immediately auditable.", "James P.", "Audit Manager, Mid-size Practice", "JP", "#3B4F8C"],
+            ].map(([q, n, r, ini, bg], i) => (
+              <div key={i} style={{ background: "#1F1F1D", borderRadius: 6, padding: 28, border: "1px solid #2A2820" }}>
+                <div style={{ fontSize: 28, color: "var(--gold)", marginBottom: 14, lineHeight: 1 }}>"</div>
+                <p style={{ fontSize: 14, color: "#C8C5BE", lineHeight: 1.7, marginBottom: 22, fontFamily: "var(--fd)", fontStyle: "italic" }}>{q}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>{ini}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E6DF" }}>{n}</div>
+                    <div style={{ fontSize: 12, color: "#6B6963" }}>{r}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
