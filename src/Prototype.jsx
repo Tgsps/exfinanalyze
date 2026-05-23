@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export default function ExFinAnalyze() {
-  const [activeView, setActiveView] = useState('extract');
+  const [activeView, setActiveView] = useState('dashboard');
   const [extractStep, setExtractStep] = useState(0);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [showCoaching, setShowCoaching] = useState(false);
@@ -46,9 +46,11 @@ export default function ExFinAnalyze() {
         <nav className="flex-1 px-3 py-4">
           <div className="text-[10px] uppercase tracking-widest text-[#6B6963] px-3 mb-2 font-semibold">Workspace</div>
           {[
-            { id: 'extract', icon: FileText, label: 'Document Extraction', badge: '12' },
-            { id: 'review', icon: GraduationCap, label: 'AI Shadow Reviewer', badge: 'NEW' },
-            { id: 'close', icon: BarChart3, label: 'Month-End Close', badge: '3' },
+            { id:'dashboard',  icon:BarChart3,     label:'Dashboard',          badge:null  },
+            { id:'extract',    icon:FileText,      label:'Documents',          badge:'12'  },
+            { id:'review',     icon:GraduationCap, label:'AI Shadow Reviewer', badge:'NEW' },
+            { id:'close',      icon:Activity,      label:'Month-End Close',    badge:'3'   },
+            { id:'concierge',  icon:MessageSquare, label:'AI Concierge',       badge:'NEW' },
           ].map(item => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -74,15 +76,20 @@ export default function ExFinAnalyze() {
             );
           })}
 
-          <div className="text-[10px] uppercase tracking-widest text-[#6B6963] px-3 mb-2 mt-6 font-semibold">Library</div>
+          <div className="text-[10px] uppercase tracking-widest text-[#6B6963] px-3 mb-2 mt-6 font-semibold">Tools</div>
           {[
-            { icon: FolderOpen, label: 'Documents' },
-            { icon: BookOpen, label: 'Knowledge Base' },
-            { icon: Activity, label: 'Audit Trail' },
-          ].map(item => {
+            { id:'calculator', icon:TrendingUp, label:'Incentive Calculator', clickable:true },
+            { id:null,         icon:BookOpen,   label:'Knowledge Base',       clickable:false },
+            { id:null,         icon:Clock,      label:'Audit Trail',          clickable:false },
+          ].map((item,i) => {
             const Icon = item.icon;
+            const isActive = item.id && activeView === item.id;
             return (
-              <button key={item.label} className="w-full flex items-center gap-3 px-3 py-2 mb-0.5 text-[#8B8983] hover:bg-[#1A1A18] hover:text-[#A8A6A0] text-left" style={{ borderRadius: '4px' }}>
+              <button key={i}
+                onClick={() => item.clickable && item.id && setActiveView(item.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2 mb-0.5 text-left transition-all ${
+                  isActive ? 'bg-[#1F1F1D] text-white' : item.clickable ? 'text-[#A8A6A0] hover:bg-[#1A1A18] hover:text-[#E8E6DF]' : 'text-[#6B6963] cursor-default'
+                }`} style={{ borderRadius: '4px' }}>
                 <Icon size={14} strokeWidth={1.5} />
                 <span className="text-[13px]">{item.label}</span>
               </button>
@@ -108,15 +115,21 @@ export default function ExFinAnalyze() {
         <div className="h-14 border-b border-[#E8E4DA] bg-white flex items-center justify-between px-7">
           <div className="flex items-center gap-3">
             <div className="text-[11px] text-[#8B8983] uppercase tracking-widest">
-              {activeView === 'extract' && 'Extraction'}
-              {activeView === 'review' && 'Coaching'}
-              {activeView === 'close' && 'Close Workflow'}
+              {activeView === 'dashboard'  && 'Analytics'}
+              {activeView === 'extract'    && 'Extraction'}
+              {activeView === 'review'     && 'Coaching'}
+              {activeView === 'close'      && 'Close Workflow'}
+              {activeView === 'concierge'  && 'AI'}
+              {activeView === 'calculator' && 'Tools'}
             </div>
             <ChevronRight size={12} className="text-[#C4C0B6]" />
             <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: '15px' }} className="text-[#1A1A1A]">
-              {activeView === 'extract' && 'Q3 Vendor Documents'}
-              {activeView === 'review' && 'Lease Agreement — TechSpace Realty'}
-              {activeView === 'close' && 'November 2026 Close'}
+              {activeView === 'dashboard'  && 'Intelligent Analytics View'}
+              {activeView === 'extract'    && 'Q3 Vendor Documents'}
+              {activeView === 'review'     && 'Lease Agreement — TechSpace Realty'}
+              {activeView === 'close'      && 'November 2026 Close'}
+              {activeView === 'concierge'  && '24/7 AI Concierge'}
+              {activeView === 'calculator' && 'Smart Incentive Calculator'}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -133,9 +146,12 @@ export default function ExFinAnalyze() {
 
         {/* Content area */}
         <div className="flex-1 overflow-auto">
-          {activeView === 'extract' && <ExtractionView extractStep={extractStep} setExtractStep={setExtractStep} setActiveView={setActiveView} />}
-          {activeView === 'review' && <ShadowReviewerView showCoaching={showCoaching} setShowCoaching={setShowCoaching} setActiveView={setActiveView} />}
-          {activeView === 'close' && <CloseView narrativeGenerating={narrativeGenerating} setNarrativeGenerating={setNarrativeGenerating} narrativeDone={narrativeDone} setNarrativeDone={setNarrativeDone} />}
+          {activeView === 'dashboard'  && <DashboardView />}
+          {activeView === 'extract'    && <ExtractionView extractStep={extractStep} setExtractStep={setExtractStep} setActiveView={setActiveView} />}
+          {activeView === 'review'     && <ShadowReviewerView showCoaching={showCoaching} setShowCoaching={setShowCoaching} setActiveView={setActiveView} />}
+          {activeView === 'close'      && <CloseView narrativeGenerating={narrativeGenerating} setNarrativeGenerating={setNarrativeGenerating} narrativeDone={narrativeDone} setNarrativeDone={setNarrativeDone} />}
+          {activeView === 'concierge'  && <ConciergeView />}
+          {activeView === 'calculator' && <IncentiveCalculatorView />}
         </div>
       </main>
     </div>
@@ -721,6 +737,344 @@ function CloseView({ narrativeGenerating, setNarrativeGenerating, narrativeDone,
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============= DASHBOARD VIEW =============
+function DashboardView() {
+  const W = 560, H = 140;
+  const rev  = [42,58,51,67,62,78,72,91,84,102,94,112];
+  const sust = [18,21,24,27,23,31,34,37,32,44,40,47];
+  const mx   = 120;
+  const toPath = pts => pts.map((v, i) => `${i === 0 ? 'M' : 'L'} ${(i/(pts.length-1))*W} ${H-(v/mx)*H}`).join(' ');
+
+  return (
+    <div className="p-8 max-w-[1400px]">
+      <div className="mb-6">
+        <div className="text-[11px] uppercase tracking-widest text-[#8B8983] mb-1">Analytics</div>
+        <h1 style={{ fontFamily:"'Fraunces',serif", fontWeight:500, fontSize:34, lineHeight:1.1, letterSpacing:'-0.025em' }} className="text-[#1A1A1A]">
+          Intelligent Analytics View
+        </h1>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        {['Last 30 Days','Last Quarter','YTD','All Time'].map((t,i) => (
+          <button key={t} className={`px-3 py-1 text-[12px] transition-colors ${i===0 ? 'bg-[#1A1A1A] text-white' : 'bg-white border border-[#E8E4DA] text-[#5A5854] hover:border-[#A67C4E]'}`} style={{borderRadius:3}}>{t}</button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        {/* Charts column */}
+        <div className="col-span-2 space-y-5">
+          {/* Revenue chart */}
+          <div className="bg-white border border-[#E8E4DA]" style={{borderRadius:4}}>
+            <div className="px-5 py-4 border-b border-[#E8E4DA] flex items-center justify-between">
+              <div style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:16}}>Revenue & Sustainable Growth Trajectory</div>
+              <div className="flex gap-4 text-[11px] text-[#5A5854]">
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#A67C4E]"/>Revenue (USD)</div>
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#2F6B4D]"/>Sustainable Growth Index (%)</div>
+              </div>
+            </div>
+            <div className="px-5 pt-4 pb-3">
+              <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:140}}>
+                {[0.25,0.5,0.75,1].map(f=>(
+                  <line key={f} x1="0" y1={H*(1-f)} x2={W} y2={H*(1-f)} stroke="#F0EDE3" strokeWidth="1"/>
+                ))}
+                <path d={toPath(rev)}  fill="none" stroke="#A67C4E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d={toPath(sust)} fill="none" stroke="#2F6B4D" strokeWidth="2"   strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 3"/>
+              </svg>
+              <div className="flex justify-between mt-1 text-[10px] text-[#8B8983]">
+                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m=><span key={m}>{m}</span>)}
+              </div>
+              <div className="flex gap-8 mt-3 pt-3 border-t border-[#F0EDE3]">
+                <div>
+                  <div className="text-[10px] text-[#8B8983] uppercase tracking-wider mb-0.5">Current Month</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:20,fontWeight:600}} className="text-[#A67C4E]">$38,588</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-[#8B8983] uppercase tracking-wider mb-0.5">YoY Change</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:20,fontWeight:600}} className="text-[#2F6B4D]">+12.25%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Portfolio distribution */}
+          <div className="bg-white border border-[#E8E4DA]" style={{borderRadius:4}}>
+            <div className="px-5 py-4 border-b border-[#E8E4DA]">
+              <div style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:16}}>Real-Time Portfolio Distribution</div>
+            </div>
+            <div className="p-5 flex items-center gap-8">
+              <div className="relative flex-shrink-0" style={{width:110,height:110}}>
+                <svg viewBox="0 0 42 42" style={{width:110,height:110,transform:'rotate(-90deg)'}}>
+                  {(() => {
+                    const segs=[{pct:40,c:'#2F6B4D'},{pct:25,c:'#A67C4E'},{pct:20,c:'#3B4F8C'},{pct:10,c:'#8B8983'},{pct:5,c:'#C4C0B6'}];
+                    const circ=2*Math.PI*15.9155; let off=0;
+                    return segs.map((s,i)=>{
+                      const el=<circle key={i} cx="21" cy="21" r="15.9155" fill="transparent" stroke={s.c}
+                        strokeWidth="8" strokeDasharray={`${(s.pct/100)*circ} ${circ}`}
+                        strokeDashoffset={-(off/100)*circ}/>;
+                      off+=s.pct; return el;
+                    });
+                  })()}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700}}>$1.5M</div>
+                  <div className="text-[9px] text-[#8B8983]">Total</div>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                {[
+                  {label:'Green Bonds',pct:40,c:'#2F6B4D'},
+                  {label:'Renewable Energy',pct:25,c:'#A67C4E'},
+                  {label:'AI Funds',pct:20,c:'#3B4F8C'},
+                  {label:'Water Tech',pct:10,c:'#8B8983'},
+                  {label:'Other',pct:5,c:'#C4C0B6'},
+                ].map(item=>(
+                  <div key={item.label} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{background:item.c}}/>
+                    <div className="text-[12px] text-[#5A5854] w-36">{item.label} ({item.pct}%)</div>
+                    <div className="flex-1 h-1.5 bg-[#F0EDE3] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{width:`${item.pct*2.4}%`,background:item.c}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="col-span-1 space-y-4">
+          {/* AI Insights */}
+          <div className="bg-[#0F0F0E] text-[#E8E6DF]" style={{borderRadius:4}}>
+            <div className="px-4 py-3 border-b border-[#262624] flex items-center justify-between">
+              <div style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:15}}>AI Insights</div>
+              <Sparkles size={13} className="text-[#D4A574]"/>
+            </div>
+            <div className="p-4 space-y-3">
+              {[
+                {type:'AI Suggestion',body:'Allocate 2% to Green Bonds for balanced growth.',color:'#D4A574'},
+                {type:'AI Alert',body:'Consider trimming exposure to high-volatility assets.',color:'#E8B574'},
+                {type:'AI Opportunity',body:'Emerging green-tech ETF detected.',color:'#7FB897',action:'Explore Now'},
+              ].map((ins,i)=>(
+                <div key={i} className="bg-[#1A1A18] p-3" style={{borderRadius:3}}>
+                  <div className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{color:ins.color}}>{ins.type}</div>
+                  <div className="text-[11px] text-[#C8C5BE] leading-relaxed">{ins.body}</div>
+                  {ins.action && <button className="mt-1.5 text-[10px] hover:underline" style={{color:ins.color}}>{ins.action} →</button>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity Feed */}
+          <div className="bg-white border border-[#E8E4DA]" style={{borderRadius:4}}>
+            <div className="px-4 py-3 border-b border-[#E8E4DA]">
+              <div style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:15}}>Activity Feed</div>
+            </div>
+            <div className="divide-y divide-[#F0EDE3]">
+              {[
+                {emoji:'📈',label:'Bought 500 units of GNRG ETF',time:'5 min ago',c:'#2F6B4D'},
+                {emoji:'💰',label:'Received dividend from MTR Tech',time:'32 min ago',c:'#A67C4E'},
+                {emoji:'⚡',label:'AI rebalancing executed for Portfolio A',time:'1 hr ago',c:'#3B4F8C'},
+                {emoji:'📉',label:'Sold 100 units of TSLA',time:'3 hr ago',c:'#A8482E'},
+              ].map((item,i)=>(
+                <div key={i} className="px-4 py-2.5 flex items-start gap-3 hover:bg-[#FAFAF7]">
+                  <div className="text-[16px] mt-0.5">{item.emoji}</div>
+                  <div className="flex-1">
+                    <div className="text-[12px] text-[#1A1A1A] leading-snug">{item.label}</div>
+                    <div className="text-[10px] text-[#8B8983] mt-0.5">{item.time}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============= AI CONCIERGE VIEW =============
+function ConciergeView() {
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([
+    { from:'ai',   text:"Hello! I'm your personal financial analyst. How can I assist you today?" },
+    { from:'user', text:'Can you give me an update on my sustainable tech portfolio?' },
+    { from:'ai',   text:"Certainly! Based on real-time data, your green-tech investments are performing strongly. Would you like a detailed breakdown or a market forecast?" },
+  ]);
+
+  const send = () => {
+    if (!input.trim()) return;
+    const q = input;
+    setInput('');
+    setMessages(m => [...m, { from:'user', text:q }]);
+    setTimeout(() => setMessages(m => [...m, { from:'ai', text:"I'm analyzing your portfolio in real-time. Your green-tech holdings show a +8.4% gain this month, driven by renewable energy funds. Shall I generate a detailed report?" }]), 700);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex w-16 h-16 bg-[#1A1A1A] items-center justify-center mb-4" style={{borderRadius:'50%'}}>
+              <MessageSquare size={26} className="text-[#D4A574]" strokeWidth={1.5}/>
+            </div>
+            <h1 style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:36,letterSpacing:'-0.025em'}} className="text-[#1A1A1A]">
+              24/7 AI Concierge
+            </h1>
+            <p className="text-[13px] text-[#8B8983] mt-1">Your personal financial analyst, always on.</p>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            {messages.map((msg,i)=>(
+              <div key={i} className={`flex ${msg.from==='user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.from==='ai' && (
+                  <div className="w-7 h-7 bg-[#1A1A1A] flex items-center justify-center mr-2 mt-1 flex-shrink-0" style={{borderRadius:'50%'}}>
+                    <Sparkles size={12} className="text-[#D4A574]"/>
+                  </div>
+                )}
+                <div className={`max-w-[82%] px-4 py-2.5 text-[13px] leading-relaxed ${msg.from==='user' ? 'bg-[#1A1A1A] text-white' : 'bg-white border border-[#E8E4DA] text-[#1A1A1A]'}`} style={{borderRadius:8}}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-center mb-6">
+            {['Analyze my portfolio','Explain market trends','Review tax optimization','Suggest green investments'].map(action=>(
+              <button key={action}
+                onClick={() => { setMessages(m=>[...m,{from:'user',text:action}]); setTimeout(()=>setMessages(m=>[...m,{from:'ai',text:`I'll work on "${action}" for you right away. Give me a moment to gather the latest data…`}]),600); }}
+                className="px-3 py-1.5 bg-white border border-[#E8E4DA] text-[12px] text-[#5A5854] hover:border-[#A67C4E] hover:text-[#A67C4E] transition-colors"
+                style={{borderRadius:20}}>{action}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-[#E8E4DA] bg-white p-4 flex-shrink-0">
+        <div className="max-w-xl mx-auto flex gap-3">
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()}
+            placeholder="Ask me anything…"
+            className="flex-1 px-4 py-2.5 border border-[#E8E4DA] text-[13px] outline-none focus:border-[#A67C4E] placeholder:text-[#8B8983]"
+            style={{borderRadius:4,fontFamily:"'DM Sans',sans-serif"}}/>
+          <button onClick={send} className="px-5 py-2.5 bg-[#1A1A1A] text-white text-[13px] font-semibold hover:bg-[#A67C4E] transition-colors flex items-center gap-2" style={{borderRadius:4}}>
+            <ArrowRight size={14}/> Send
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============= INCENTIVE CALCULATOR VIEW =============
+function IncentiveCalculatorView() {
+  const [dept, setDept]     = useState('Sales');
+  const [salary, setSalary] = useState('6500');
+  const [months, setMonths] = useState('8');
+  const [target, setTarget] = useState('1200000');
+  const [actual, setActual] = useState('1380000');
+  const [result, setResult] = useState(null);
+
+  const calculate = () => {
+    const base = parseFloat(salary) || 0;
+    const mo   = parseFloat(months) || 12;
+    const tgt  = parseFloat(target) || 1;
+    const act  = parseFloat(actual) || 0;
+    const ach  = act / tgt;
+    const mult = ach >= 1.1 ? 1.5 : ach >= 1.05 ? 1.25 : ach >= 1.0 ? 1.0 : ach >= 0.95 ? 0.75 : ach >= 0.9 ? 0.5 : 0;
+    setResult({ incentive: base*(mo/12)*mult, achievement: (ach*100).toFixed(1) });
+  };
+
+  const tiers = [
+    {label:'Below 90%',pct:0},{label:'90%–95%',pct:30},{label:'95%–100%',pct:55},
+    {label:'100%',pct:70},{label:'105% — 110% Incentive',pct:85},{label:'110%',pct:92},{label:'115%+',pct:100},
+  ];
+
+  return (
+    <div className="p-8 max-w-[1400px]">
+      <div className="mb-7">
+        <div className="text-[11px] uppercase tracking-widest text-[#8B8983] mb-1">Tools</div>
+        <h1 style={{fontFamily:"'Fraunces',serif",fontWeight:500,fontSize:34,lineHeight:1.1,letterSpacing:'-0.025em'}} className="text-[#1A1A1A]">
+          Smart Incentive Calculator
+        </h1>
+      </div>
+
+      <div className="grid grid-cols-2 gap-8">
+        {/* Inputs */}
+        <div className="bg-white border border-[#E8E4DA] p-6" style={{borderRadius:4}}>
+          <div className="text-[12px] font-semibold uppercase tracking-widest text-[#8B8983] mb-3">Department Selection</div>
+          <div className="flex gap-2 flex-wrap mb-6">
+            {['Sales','Health Club','SPA','C&E'].map(d=>(
+              <button key={d} onClick={()=>setDept(d)}
+                className={`px-4 py-2 text-[13px] border transition-all ${dept===d ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'bg-white text-[#5A5854] border-[#E8E4DA] hover:border-[#A67C4E]'}`}
+                style={{borderRadius:3}}>{d}</button>
+            ))}
+          </div>
+
+          <div className="text-[12px] font-semibold uppercase tracking-widest text-[#8B8983] mb-3">Input Fields</div>
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            {[
+              {label:'Basic Salary',value:salary,set:setSalary,pre:'$'},
+              {label:'Months Served',value:months,set:setMonths,pre:''},
+              {label:'Revenue — BOY Target',value:target,set:setTarget,pre:'$'},
+              {label:'Revenue — Actual Achieved',value:actual,set:setActual,pre:'$'},
+            ].map(f=>(
+              <div key={f.label}>
+                <div className="text-[11px] text-[#8B8983] mb-1.5">{f.label}</div>
+                <div className="relative">
+                  {f.pre && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B8983] text-[13px]">{f.pre}</span>}
+                  <input value={f.value} onChange={e=>f.set(e.target.value)}
+                    className={`w-full border border-[#E8E4DA] py-2 text-[13px] outline-none focus:border-[#A67C4E] bg-[#FAFAF7] ${f.pre ? 'pl-6 pr-3' : 'px-3'}`}
+                    style={{borderRadius:3,fontFamily:"'JetBrains Mono',monospace"}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={calculate}
+            className="w-full bg-[#1A1A1A] text-white py-3 text-[13px] font-semibold hover:bg-[#A67C4E] transition-colors flex items-center justify-center gap-2"
+            style={{borderRadius:3}}>
+            <TrendingUp size={14}/> Calculate Incentive
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E8E4DA] p-6 text-center" style={{borderRadius:4}}>
+            <div className="text-[11px] uppercase tracking-widest text-[#8B8983] mb-4">Results</div>
+            {result ? (
+              <>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:40,fontWeight:600,color:'#A67C4E',letterSpacing:'-0.03em',lineHeight:1.1}}>
+                  Incentive: ${Math.round(result.incentive).toLocaleString()}
+                </div>
+                <div className="text-[12px] text-[#8B8983] mt-2">Calculated AI Payout · Achievement {result.achievement}%</div>
+              </>
+            ) : (
+              <div className="py-8 text-[#C4C0B6] text-[13px]">Enter values above and calculate to see results</div>
+            )}
+          </div>
+
+          <div className="bg-white border border-[#E8E4DA] p-6" style={{borderRadius:4}}>
+            <div className="text-[12px] font-semibold uppercase tracking-widest text-[#8B8983] mb-4">Achievement Tiers</div>
+            <div className="space-y-3">
+              {tiers.map((tier,i)=>{
+                const active = result && tier.pct > 0 && parseFloat(result.achievement) >= (i*15+75);
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="text-[11px] text-[#5A5854] w-44 flex-shrink-0">{tier.label}</div>
+                    <div className="flex-1 h-2 bg-[#F0EDE3] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{width:`${tier.pct}%`, background: active ? '#A67C4E' : '#1A1A1A', opacity: tier.pct===0 ? 0.15 : active ? 1 : 0.55}}/>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
