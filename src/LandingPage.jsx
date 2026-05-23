@@ -20,9 +20,9 @@ const ANIM = `
 `;
 
 const TICKER_ITEMS = [
-  "Extract PDFs in seconds","Flag contract risks automatically","Generate MD&A narratives",
-  "Train junior staff in real-time","Detect anomalies before close","Zero manual data entry",
-  "Source-backed every claim",
+  "Autonomous portfolio optimization","Neural fraud detection in real-time","Predictive market analytics",
+  "24/7 AI financial concierge","Green finance scoring & ESG tracking","Smart investment automation",
+  "Instant risk assessment",
 ];
 
 const FEATURES = [
@@ -235,24 +235,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* TRUST & TESTIMONIALS */}
       <section style={{ padding: "80px 40px", background: "var(--ink)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>Early Testers</div>
-            <h2 style={{ fontFamily: "var(--fd)", fontSize: 36, fontWeight: 500, letterSpacing: "-0.025em", color: "#E8E6DF", margin: 0 }}>What reviewers are saying</h2>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>Trust & Testimonials</div>
+            <h2 style={{ fontFamily: "var(--fd)", fontSize: 36, fontWeight: 500, letterSpacing: "-0.025em", color: "#E8E6DF", margin: "0 0 40px" }}>
+              ExFinAnalyze <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Trust & Testimonials</em>
+            </h2>
+            {/* Partner logos */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 36, flexWrap: "wrap", paddingBottom: 40, borderBottom: "1px solid #2A2820" }}>
+              {[
+                { name: "stripe",      style: { fontWeight: 700, letterSpacing: "-0.04em", fontSize: 18 } },
+                { name: "aws",         style: { fontWeight: 800, letterSpacing: "0.04em",  fontSize: 15, textTransform: "uppercase" } },
+                { name: "PLAID",       style: { fontWeight: 700, letterSpacing: "0.08em",  fontSize: 14 } },
+                { name: "VISA",        style: { fontWeight: 900, letterSpacing: "0.05em",  fontSize: 18, fontStyle: "italic" } },
+                { name: "mastercard",  style: { fontWeight: 600, letterSpacing: "-0.01em", fontSize: 14 } },
+                { name: "salesforce",  style: { fontWeight: 700, letterSpacing: "-0.02em", fontSize: 14 } },
+              ].map(({ name, style }) => (
+                <span key={name} style={{ color: "#4A4840", fontFamily: "var(--fb)", ...style }}>{name}</span>
+              ))}
+            </div>
           </div>
           <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
             {[
-              ["The Shadow Reviewer is unlike anything I've seen. My junior team is finally learning on the job instead of making the same mistakes twice.", "Marcus K.", "Controller, SaaS startup (Series B)", "MK", "#2C5F42"],
-              ["Month-end used to take our team 6 days. The narrative generator alone saves us 4-5 hours every close cycle.", "Sarah L.", "Senior Accountant, Regional CPA Firm", "SL", "#9A3B2A"],
-              ["We reviewed the lease extraction against our manual workpapers. 97% match on 80+ fields. The source citations made it immediately auditable.", "James P.", "Audit Manager, Mid-size Practice", "JP", "#3B4F8C"],
+              ["The autonomous portfolio optimization is remarkable. The AI models adapt to market shifts in real-time, delivering data-backed returns we couldn't achieve manually.", "Jane Doe", "CTO at FinCorp", "JD", "#2C5F42"],
+              ["The neural fraud detection alone pays for itself. ExFinAnalyze caught suspicious transactions our compliance team missed — real-time protection at scale.", "Andahamrath", "Investment Analyst at FinCo", "AN", "#C8924A"],
+              ["Predictive analytics that actually work. ExFinAnalyze identified a carbon credit opportunity three weeks before the broader market moved. Consistent, intelligent, reliable.", "Harry Doe", "CEO at FinCorp", "HD", "#3B4F8C"],
             ].map(([q, n, r, ini, bg], i) => (
-              <div key={i} style={{ background: "#1F1F1D", borderRadius: 6, padding: 28, border: "1px solid #2A2820" }}>
-                <div style={{ fontSize: 28, color: "var(--gold)", marginBottom: 14, lineHeight: 1 }}>"</div>
-                <p style={{ fontSize: 14, color: "#C8C5BE", lineHeight: 1.7, marginBottom: 22, fontFamily: "var(--fd)", fontStyle: "italic" }}>{q}</p>
+              <div key={i} style={{ background: "#1A1916", borderRadius: 8, padding: 28, border: "1px solid #2A2820" }}>
+                <div style={{ fontSize: 32, color: "var(--gold)", marginBottom: 12, lineHeight: 1, fontFamily: "var(--fd)" }}>"</div>
+                <p style={{ fontSize: 14, color: "#C8C5BE", lineHeight: 1.75, marginBottom: 24, fontFamily: "var(--fd)", fontStyle: "italic" }}>{q}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>{ini}</div>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>{ini}</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E6DF" }}>{n}</div>
                     <div style={{ fontSize: 12, color: "#6B6963" }}>{r}</div>
@@ -345,33 +360,62 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: "var(--ink)", padding: "48px 40px 28px" }}>
+      <footer style={{ background: "var(--ink)", padding: "60px 40px 28px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 28, borderBottom: "1px solid #2A2820", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 26, height: 26, background: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 3 }}>
-                <span style={{ fontFamily: "var(--fd)", fontWeight: 700, color: "var(--ink)", fontSize: 13 }}>E</span>
+          {/* Top: brand + columns */}
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 40, paddingBottom: 48, borderBottom: "1px solid #2A2820", marginBottom: 28 }}>
+            {/* Brand column */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <div style={{ width: 28, height: 28, background: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 3 }}>
+                  <span style={{ fontFamily: "var(--fd)", fontWeight: 700, color: "var(--ink)", fontSize: 14 }}>E</span>
+                </div>
+                <span style={{ fontFamily: "var(--fd)", fontWeight: 600, fontSize: 16, color: "#E8E6DF" }}>ExFinAnalyze</span>
               </div>
-              <span style={{ fontFamily: "var(--fd)", fontWeight: 600, fontSize: 15, color: "#E8E6DF" }}>ExFinAnalyze</span>
+              <p style={{ fontSize: 13, color: "#6B6963", lineHeight: 1.7, maxWidth: 240 }}>
+                AI-powered financial intelligence for the next generation of investors and institutions.
+              </p>
+              {/* Newsletter */}
+              <div style={{ marginTop: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#6B6963", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Newsletter</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    style={{ flex: 1, padding: "8px 12px", background: "#1A1916", border: "1px solid #2A2820", borderRadius: 4, color: "#E8E6DF", fontSize: 12, outline: "none", fontFamily: "var(--fb)" }}
+                  />
+                  <button style={{ padding: "8px 14px", background: "var(--gold)", border: "none", borderRadius: 4, color: "var(--ink)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "var(--fb)", whiteSpace: "nowrap" }}>
+                    Subscribe
+                  </button>
+                </div>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 24, fontSize: 13, color: "#6B6963" }}>
-              {[["Privacy","mailto:privacy@exfinanalyze.com"],["Terms","mailto:legal@exfinanalyze.com"],["Security","mailto:security@exfinanalyze.com"],["Contact","mailto:hello@exfinanalyze.com"]].map(([l,h]) => (
-                <a key={l} href={h} style={{ textDecoration: "none", color: "inherit", transition: "color .2s" }}
-                  onMouseEnter={e => (e.target.style.color = "#E8E6DF")}
-                  onMouseLeave={e => (e.target.style.color = "#6B6963")}>{l}</a>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap", paddingBottom: 20, marginBottom: 20, borderBottom: "1px solid #2A2820" }}>
-            {["TechGreen","SustaiFinance","GlobalAI","EcoData","SecureNet"].map(name => (
-              <span key={name} style={{ fontSize: 12, fontWeight: 600, color: "#4A4840", fontFamily: "var(--fb)", letterSpacing: "0.04em" }}>{name}</span>
+            {/* Link columns */}
+            {[
+              { heading: "Product",   links: ["Features","Pricing","API","Changelog"] },
+              { heading: "Solutions", links: ["Personal","Invest","Enterprise","Institutions"] },
+              { heading: "Company",   links: ["About Us","Careers","Blog","Contact"] },
+              { heading: "Legal",     links: ["Privacy","Terms","Compliance","Security"] },
+            ].map(({ heading, links }) => (
+              <div key={heading}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#6B6963", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>{heading}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {links.map(l => (
+                    <a key={l} href="#" style={{ textDecoration: "none", fontSize: 13, color: "#4A4840", transition: "color .15s" }}
+                      onMouseEnter={e => (e.target.style.color = "#C8C5BE")}
+                      onMouseLeave={e => (e.target.style.color = "#4A4840")}>{l}</a>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
+          {/* Bottom bar */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 12, color: "#4A4840" }}>© 2026 ExFinAnalyze. All rights reserved.</div>
-            <div style={{ fontSize: 11, color: "#4A4840", fontFamily: "var(--fm)", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#27C93F", display: "inline-block" }} />
-              Waitlist powered by Supabase Postgres
+            <div style={{ display: "flex", gap: 20, fontSize: 12, color: "#4A4840" }}>
+              {[["Privacy","#"],["Terms","#"],["Compliance","#"]].map(([l,h]) => (
+                <a key={l} href={h} style={{ textDecoration: "none", color: "inherit" }}>{l}</a>
+              ))}
             </div>
           </div>
         </div>

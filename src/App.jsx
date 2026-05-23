@@ -787,7 +787,41 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
               </div>
             ))}
 
-            {loading && (
+            {loading && chat.filter(m => m.isAnalysis).length === 0 && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20 }}>
+                {/* Pulsing neural globe */}
+                <div style={{ position: "relative", width: 96, height: 96 }}>
+                  <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "rgba(200,146,74,.06)", animation: "pulse 1.6s ease infinite" }} />
+                  <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+                    <circle cx="48" cy="48" r="46" stroke="rgba(200,146,74,.15)" strokeWidth="1.5" />
+                    <circle cx="48" cy="48" r="34" stroke="rgba(200,146,74,.25)" strokeWidth="1" strokeDasharray="3 3" />
+                    {[[48,16],[80,35],[80,61],[48,80],[16,61],[16,35]].map(([cx,cy],i) => (
+                      <circle key={i} cx={cx} cy={cy} r="4.5" fill="var(--surface)" stroke="rgba(200,146,74,.7)" strokeWidth="1.5" />
+                    ))}
+                    {[[48,16,80,35],[80,35,80,61],[80,61,48,80],[48,80,16,61],[16,61,16,35],[16,35,48,16],[48,16,48,80],[80,35,16,61],[80,61,16,35]].map(([x1,y1,x2,y2],i) => (
+                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(200,146,74,.15)" strokeWidth="1" />
+                    ))}
+                    <circle cx="48" cy="48" r="8" fill="rgba(200,146,74,.2)" stroke="var(--gold)" strokeWidth="1.5" />
+                    <circle cx="48" cy="48" r="3" fill="var(--gold)" />
+                  </svg>
+                </div>
+                {/* Streaming log */}
+                <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    `Analysis in progress for ${currentDoc?.name?.slice(0,28) || "document"}…`,
+                    "Extracting key financial metrics…",
+                    "Risk assessment underway…",
+                    "Anomaly detection scanning…",
+                  ].map((step, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", background: "var(--card2)", borderRadius: "var(--r)", border: "1px solid var(--border2)", animation: `fadeUp .4s ${i * 0.18}s both` }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, animation: "pulse 1.4s ease infinite" }} />
+                      <span style={{ fontSize: 12, color: "var(--ink2)", fontFamily: "var(--fm)" }}>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {loading && chat.filter(m => m.isAnalysis).length > 0 && (
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <div style={{ padding: "12px 16px", borderRadius: "4px 14px 14px 14px", background: "var(--surface)", border: "1px solid var(--border)" }}>
                   <div className="dot-pulse"><span/><span/><span/></div>
@@ -846,9 +880,9 @@ function ReportsPage({ user, docs, toast }) {
   const analyzed = selectedDocs.filter(d => d.status === "analyzed");
 
   const TYPES = [
-    { id: "monthly", label: "Monthly Close Report",  desc: "Full summary for CFO review",   icon: "📊", color: "#C8924A" },
-    { id: "risk",    label: "Risk Assessment",        desc: "Risk matrix and mitigations",    icon: "⚠️", color: "#E05C5C" },
-    { id: "audit",   label: "Audit Readiness",        desc: "Pre-audit checklist",            icon: "✅", color: "#4CAF7D" },
+    { id: "monthly", label: "Monthly Close Report",  desc: "AI-generated financial reports — calendar and comparative.", icon: "report", color: "#C8924A" },
+    { id: "risk",    label: "Risk Assessment",        desc: "AI-generates financial reports — risk level, readiness.",    icon: "alert",  color: "#E05C5C" },
+    { id: "audit",   label: "Audit Readiness",        desc: "AI-generates financial reports — audit readiness.",           icon: "docs",   color: "#4CAF7D" },
   ];
 
   const generate = async () => {
@@ -1006,11 +1040,13 @@ ${output.split("\n").map(l => {
             <div className="card-title mb-3">Report Type</div>
             {TYPES.map(r => (
               <button key={r.id} onClick={() => { setType(r.id); setPdfUrl(null); setOutput(""); }}
-                style={{ display: "flex", gap: 12, padding: "11px", borderRadius: "var(--r)", border: `1px solid ${type===r.id?"var(--gold)":"var(--border)"}`, background: type===r.id?"rgba(200,146,74,.07)":"transparent", cursor: "pointer", textAlign: "left", width: "100%", marginBottom: 8, transition: "all .13s" }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon}</span>
+                style={{ display: "flex", gap: 12, padding: "13px", borderRadius: "var(--r)", border: `1px solid ${type===r.id?r.color:"var(--border)"}`, background: type===r.id?`${r.color}0d`:"transparent", cursor: "pointer", textAlign: "left", width: "100%", marginBottom: 8, transition: "all .15s" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: `${r.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${r.color}30` }}>
+                  <IC n={r.icon} s={15} c={r.color} />
+                </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: type===r.id?"var(--gold)":"var(--ink)", fontFamily: "var(--fb)" }}>{r.label}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink3)", marginTop: 1 }}>{r.desc}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: type===r.id?r.color:"var(--ink)", fontFamily: "var(--fb)" }}>{r.label}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink3)", marginTop: 2, lineHeight: 1.4 }}>{r.desc}</div>
                 </div>
               </button>
             ))}
@@ -1071,10 +1107,37 @@ ${output.split("\n").map(l => {
           )}
 
           {!pdfUrl && !busy && (
-            <div className="empty-state" style={{ padding: "80px 0" }}>
-              <div className="empty-icon">📄</div>
-              <div style={{ color: "var(--ink2)", fontSize: 13 }}>Select type and generate report</div>
-              <div className="text-muted mt-2">Preview will appear here — export as PDF or Word</div>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", minHeight:480, padding:"40px 32px", gap:24 }}>
+              {/* Document mockup */}
+              <div style={{ width:220, background:"var(--card2)", borderRadius:8, border:"1px solid var(--border)", overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,.18)" }}>
+                <div style={{ height:32, background:TYPES.find(t=>t.id===type)?.color||"var(--gold)", display:"flex", alignItems:"center", padding:"0 14px", gap:8 }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:"#0C0E0D", fontFamily:"var(--fb)", opacity:.85 }}>
+                    ExFinAnalyze
+                  </div>
+                </div>
+                <div style={{ padding:16 }}>
+                  <div style={{ height:8, background:"var(--border)", borderRadius:4, marginBottom:8, width:"70%" }} />
+                  <div style={{ height:6, background:"var(--border2)", borderRadius:4, marginBottom:6, width:"90%" }} />
+                  <div style={{ height:6, background:"var(--border2)", borderRadius:4, marginBottom:6, width:"80%" }} />
+                  <div style={{ height:6, background:"var(--border2)", borderRadius:4, marginBottom:14, width:"60%" }} />
+                  <div style={{ height:1, background:"var(--border)", marginBottom:12 }} />
+                  {[90,75,55,40].map((w,i) => (
+                    <div key={i} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"center" }}>
+                      <div style={{ height:5, borderRadius:3, background:TYPES.find(t=>t.id===type)?.color||"var(--gold)", width:`${w}%`, opacity:.4+i*.1 }} />
+                    </div>
+                  ))}
+                  <div style={{ height:1, background:"var(--border)", margin:"12px 0" }} />
+                  <div style={{ height:5, background:"var(--border2)", borderRadius:4, width:"50%" }} />
+                </div>
+              </div>
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontSize:13, color:"var(--ink)", fontWeight:600, marginBottom:4 }}>
+                  {TYPES.find(t=>t.id===type)?.label}
+                </div>
+                <div style={{ fontSize:12, color:"var(--ink3)" }}>
+                  {analyzed.length > 0 ? `${analyzed.length} document${analyzed.length>1?"s":""} ready · Click Generate` : "Analyze documents first to generate"}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1629,30 +1692,37 @@ function IncentivePage() {
               )}
             </div>
 
-            {/* Tier table */}
+            {/* Tier table — horizontal bars */}
             <div className="card">
-              <div className="card-title mb-3">Achievement Tiers</div>
+              <div className="card-title mb-4">Achievement Tiers</div>
               {[
-                { range:"Below 95%", payout:"0% — no incentive", min:0,   max:95,  c:"var(--red)"    },
-                { range:"95%",       payout:"50%",               min:95,  max:100, c:"var(--gold)"   },
-                { range:"100%",      payout:"100%",              min:100, max:105, c:"var(--green)"  },
-                { range:"105%",      payout:"110%",              min:105, max:110, c:"var(--blue)"   },
-                { range:"110%",      payout:"120%",              min:110, max:115, c:"var(--purple)" },
-                { range:"115%+",     payout:"130% (capped)",     min:115, max:999, c:"var(--purple)" },
+                { range:"Below 95%", payout:"0% — no incentive", min:0,   max:95,  c:"var(--red)",    barW:8  },
+                { range:"95%",       payout:"50%",               min:95,  max:100, c:"var(--gold)",   barW:30 },
+                { range:"100%",      payout:"100%",              min:100, max:105, c:"var(--green)",  barW:50 },
+                { range:"105%",      payout:"110%",              min:105, max:110, c:"var(--blue)",   barW:65 },
+                { range:"110%",      payout:"120%",              min:110, max:115, c:"var(--purple)", barW:80 },
+                { range:"115%+",     payout:"130% (capped)",     min:115, max:999, c:"var(--gold)",   barW:100 },
               ].map((t, i) => {
                 const active = result?.valid && result.achv >= t.min && result.achv < t.max;
                 return (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 10px", borderRadius:"var(--r)", border:`1px solid ${active?"var(--gold)":"transparent"}`, background:active?"rgba(200,146,74,.06)":"transparent", marginBottom:3 }}>
-                    <div style={{ width:8, height:8, borderRadius:"50%", background:t.c, flexShrink:0 }} />
-                    <div style={{ flex:1, fontSize:12.5, color:"var(--ink2)" }}>{t.range}</div>
-                    <div style={{ fontSize:12.5, color:active?"var(--gold)":"var(--ink3)", fontWeight:active?500:400 }}>{t.payout}</div>
-                    {active && <span style={{ fontSize:10, color:"var(--gold)" }}>◄</span>}
+                  <div key={i} style={{ marginBottom:10 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                      <span style={{ fontSize:12, color:active?"var(--gold)":"var(--ink2)", fontWeight:active?600:400 }}>{t.range}</span>
+                      <span style={{ fontSize:11.5, color:active?"var(--gold)":"var(--ink3)", fontWeight:active?600:400, fontFamily:"var(--fm)" }}>{t.payout}</span>
+                    </div>
+                    <div style={{ height:7, background:"var(--border)", borderRadius:99, overflow:"hidden", position:"relative" }}>
+                      <div style={{ height:"100%", width:`${t.barW}%`, background:t.c, borderRadius:99, opacity:active?1:.55, transition:"width .5s ease" }} />
+                    </div>
+                    {active && (
+                      <div style={{ marginTop:4, fontSize:10.5, color:"var(--gold)", fontWeight:600 }}>
+                        ✓ Current tier — {t.barW}% Achievement · {t.payout} Incentive
+                      </div>
+                    )}
                   </div>
                 );
               })}
-              <div style={{ marginTop:12, padding:"10px 12px", background:"var(--card2)", borderRadius:"var(--r)", fontSize:11.5, color:"var(--ink3)", lineHeight:1.7 }}>
-                Interpolation: linear between tiers<br/>
-                Pro-ration: min. 3 months to qualify
+              <div style={{ marginTop:14, padding:"10px 12px", background:"var(--card2)", borderRadius:"var(--r)", fontSize:11.5, color:"var(--ink3)", lineHeight:1.7 }}>
+                Interpolation: linear between tiers · Pro-ration: min. 3 months to qualify
               </div>
             </div>
           </div>
