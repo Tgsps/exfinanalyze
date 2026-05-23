@@ -326,88 +326,487 @@ function Toasts({ toasts }) {
 
 // ─── Dashboard ────────────────────────────────────────────────────
 function Dashboard({ user, docs, setPage }) {
-  const name     = user?.user_metadata?.name || user?.email?.split("@")[0] || "there";
-  const analyzed = docs.filter(d => d.status === "analyzed").length;
-  const risks    = docs.filter(d => d.riskLevel === "high").length;
-  const contracts= docs.filter(d => d.type === "contract").length;
-  const typeC    = { pdf: "var(--red)", excel: "var(--green)", contract: "var(--blue)" };
+  const name = user?.user_metadata?.name || user?.email?.split("@")[0] || "there";
+  const balPts = [82,75,88,70,90,85,95,88,100,92,108,100,115,112,120,118,125].map((v,i,a) => `${(i/(a.length-1))*100},${100-v*0.7}`).join(" ");
 
-  const stats = [
-    { label: "Total Documents", val: docs.length, change: "All time", up: true, icon: "docs", color: "var(--gold)" },
-    { label: "AI Analyzed", val: analyzed, change: docs.length ? `${Math.round(analyzed/docs.length*100)}% coverage` : "0%", up: true, icon: "ai", color: "var(--green)" },
-    { label: "Contracts", val: contracts, change: "Tracked", up: true, icon: "contract", color: "var(--blue)" },
-    { label: "Risk Flags", val: risks, change: risks > 0 ? "Review needed" : "All clear", up: risks === 0, icon: "alert", color: risks > 0 ? "var(--red)" : "var(--green)" },
+  const txns = [
+    { symbol:"AAPL",              action:"Buy",  amount:"-$5,000.00",  color:"var(--red)"   },
+    { symbol:"SBUX",              action:"Buy",  amount:"-$1,250.00",  color:"var(--red)"   },
+    { symbol:"Transfer to Savings",action:"",   amount:"-$1,000.00",  color:"var(--red)"   },
   ];
-
-  const features = [
-    { icon: "ai",     label: "Shadow Reviewer",    desc: "ASC 842/606 real-time coaching for junior staff",  color: "var(--purple)" },
-    { icon: "docs",   label: "Document Extraction", desc: "Template-free AI extraction from any format",      color: "var(--gold)"   },
-    { icon: "report", label: "Narrative Generator", desc: "Auto-draft MD&A and flux commentary",              color: "var(--blue)"   },
-    { icon: "alert",  label: "Anomaly Detection",   desc: "Flag unusual transactions and patterns proactively",color: "var(--red)"   },
+  const markets = [
+    { name:"ETH/USD",  price:"$8,450.00",  change:"-1.8%",  up:false },
+    { name:"SOL",      price:"4,980.50",   change:"+0.41%", up:true  },
+    { name:"NASDAQ",   price:"17,230.00",  change:"+0.81%", up:true  },
+  ];
+  const aiInsights = [
+    "Portfolio Optimization suggested for increased yield.",
+    "New AI stock picks available based on predictive analytics.",
+    "Unusual spending pattern detected in transaction history.",
   ];
 
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Good morning, {name} 👋</div>
-        <div className="page-sub">Your financial intelligence overview</div>
+        <div className="page-title">Portfolio Command Center</div>
+        <div className="page-sub">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</div>
       </div>
 
-      {/* Stats */}
-      <div className="grid-4 mb-6">
-        {stats.map((s, i) => (
-          <div key={i} className="card">
-            <div className="flex items-center justify-between mb-3">
-              <div className="stat-label">{s.label}</div>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <IC n={s.icon} s={15} c={s.color} />
+      <div className="grid-2 mb-4">
+        {/* Total Balance */}
+        <div className="card">
+          <div className="card-title mb-1">Total Balance</div>
+          <div style={{fontFamily:"var(--fm)",fontSize:36,fontWeight:700,color:"var(--ink)",letterSpacing:"-0.03em",marginBottom:4}}>$124,567.89</div>
+          <div style={{fontSize:12,color:"var(--green)",marginBottom:14}}>▲ +12.5% this month</div>
+          <svg width="100%" height="56" viewBox="0 0 100 56" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--green)" stopOpacity=".22"/>
+                <stop offset="100%" stopColor="var(--green)" stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            <polygon points={`0,56 ${balPts} 100,56`} fill="url(#balGrad)"/>
+            <polyline points={balPts} fill="none" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+
+        {/* AI Assistant */}
+        <div className="card">
+          <div className="card-title mb-3">AI Assistant</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {aiInsights.map((ins,i) => (
+              <div key={i} style={{display:"flex",gap:10,padding:"9px 11px",background:"var(--card2)",borderRadius:"var(--r)",border:"1px solid var(--border2)"}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:"var(--gold)",flexShrink:0,marginTop:5}}/>
+                <span style={{fontSize:12.5,color:"var(--ink2)",lineHeight:1.5}}>{ins}</span>
               </div>
-            </div>
-            <div className="stat-val">{s.val}</div>
-            <div className={`stat-change ${s.up ? "stat-up" : "stat-down"}`}>{s.change}</div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       <div className="grid-2">
-        {/* Recent docs */}
+        {/* Recent Transactions */}
         <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <div className="card-title">Recent Documents</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="card-title">Recent Transactions</div>
             <button className="btn btn-ghost btn-sm" onClick={() => setPage("documents")}>View all</button>
           </div>
-          {docs.length === 0 ? (
-            <div className="empty-state" style={{ padding: "28px 0" }}>
-              <div className="empty-icon">📄</div>
-              <div style={{ fontSize: 13, color: "var(--ink2)", marginBottom: 6 }}>No documents yet</div>
-              <button className="btn btn-primary btn-sm" onClick={() => setPage("documents")}><IC n="upload" s={12} /> Upload first file</button>
-            </div>
-          ) : docs.slice(0, 6).map(d => (
-            <div key={d.id} className="flex items-center gap-3" style={{ padding: "9px 0", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ width: 30, height: 30, borderRadius: 6, background: `${typeC[d.type]||"var(--gold)"}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <IC n={d.type === "excel" ? "excel" : d.type === "contract" ? "contract" : "pdf"} s={13} c={typeC[d.type]||"var(--gold)"} />
+          {txns.map((t,i) => (
+            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:i<txns.length-1?"1px solid var(--border)":"none"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:32,height:32,borderRadius:8,background:"var(--card2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"var(--ink2)",fontFamily:"var(--fm)",flexShrink:0}}>
+                  {t.symbol.slice(0,2)}
+                </div>
+                <div>
+                  <div style={{fontSize:13,fontWeight:500,color:"var(--ink)"}}>{t.symbol}</div>
+                  {t.action && <div style={{fontSize:11,color:"var(--ink3)"}}>{t.action}</div>}
+                </div>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>
-                <div style={{ fontSize: 11, color: "var(--ink3)" }}>{new Date(d.uploadedAt).toLocaleDateString()}</div>
-              </div>
-              <span className={`badge badge-${d.status === "analyzed" ? "green" : d.status === "error" ? "red" : "gold"}`}>{d.status}</span>
+              <span style={{fontSize:13,fontWeight:600,color:t.color,fontFamily:"var(--fm)"}}>{t.amount}</span>
             </div>
           ))}
         </div>
 
-        {/* Features */}
+        {/* Market Overview */}
         <div className="card">
-          <div className="card-title mb-4">AI Capabilities</div>
-          {features.map((f, i) => (
-            <div key={i} className="flex gap-3" style={{ padding: "10px 0", borderBottom: i < features.length - 1 ? "1px solid var(--border)" : "none" }}>
-              <div style={{ width: 34, height: 34, borderRadius: 8, background: `${f.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <IC n={f.icon} s={15} c={f.color} />
+          <div className="card-title mb-3">Market Overview</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {markets.map((m,i) => (
+              <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",background:"var(--card2)",borderRadius:"var(--r)",border:"1px solid var(--border2)"}}>
+                <span style={{fontSize:13,fontWeight:600,color:"var(--ink)",fontFamily:"var(--fb)"}}>{m.name}</span>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--ink)",fontFamily:"var(--fm)"}}>{m.price}</div>
+                  <div style={{fontSize:11,color:m.up?"var(--green)":"var(--red)",fontFamily:"var(--fm)"}}>{m.change}</div>
+                </div>
               </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)" }}>{f.label}</div>
-                <div style={{ fontSize: 11.5, color: "var(--ink3)", marginTop: 1 }}>{f.desc}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Market ───────────────────────────────────────────────────────
+function MarketPage() {
+  const candles = Array.from({length:30},(_,i) => {
+    const base = 30000 + Math.sin(i*0.4)*5000 + i*200;
+    const open  = base + (Math.random()-0.5)*2000;
+    const close = base + (Math.random()-0.5)*2000;
+    return { open, close, high:Math.max(open,close)+Math.random()*800, low:Math.min(open,close)-Math.random()*800 };
+  });
+  const minP = Math.min(...candles.map(c=>c.low));
+  const maxP = Math.max(...candles.map(c=>c.high));
+  const rng  = maxP - minP;
+  const toY  = p => ((maxP-p)/rng)*130;
+  const toX  = i => (i/(candles.length-1))*390;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Neural Market Analysis</div>
+        <div className="page-sub">AI-powered trade signals and sentiment scoring</div>
+      </div>
+
+      {/* Ticker bar */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+        {[{n:"BTC",p:"$19,496",c:"+2.14%",up:true},{n:"ETH",p:"$1,210.95",c:"-0.95%",up:false},{n:"S&P 500",p:"4,402.20",c:"+0.46%",up:true},{n:"NASDAQ",p:"12,890.40",c:"+0.71%",up:true}].map((t,i) => (
+          <div key={i} style={{display:"flex",gap:8,alignItems:"center",padding:"5px 12px",background:"var(--card2)",borderRadius:"var(--r)",border:"1px solid var(--border2)"}}>
+            <span style={{fontSize:11.5,fontWeight:700,color:"var(--ink)",fontFamily:"var(--fb)"}}>{t.n}</span>
+            <span style={{fontSize:12,fontFamily:"var(--fm)",color:"var(--ink)"}}>{t.p}</span>
+            <span style={{fontSize:11,color:t.up?"var(--green)":"var(--red)",fontFamily:"var(--fm)"}}>{t.c}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:16}}>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          {/* Candlestick */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="card-title">BTC/USD Neural Analysis</div>
+              <div style={{display:"flex",gap:6}}>
+                {["1D","1W","1M","3M"].map(p => (
+                  <button key={p} style={{padding:"4px 10px",borderRadius:"var(--r)",border:`1px solid ${p==="1M"?"var(--gold)":"var(--border)"}`,background:p==="1M"?"rgba(200,146,74,.1)":"transparent",color:p==="1M"?"var(--gold)":"var(--ink3)",fontSize:11,cursor:"pointer"}}>{p}</button>
+                ))}
               </div>
+            </div>
+            <svg width="100%" height="140" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet">
+              {candles.map((c,i) => {
+                const x = toX(i);
+                const up = c.close >= c.open;
+                const col = up ? "#4CAF7D" : "#E05C5C";
+                const bTop = toY(Math.max(c.open,c.close));
+                const bH   = Math.max(2, Math.abs(toY(c.open)-toY(c.close)));
+                return (
+                  <g key={i}>
+                    <line x1={x} y1={toY(c.high)} x2={x} y2={toY(c.low)} stroke={col} strokeWidth="0.8" opacity=".7"/>
+                    <rect x={x-4} y={bTop} width="8" height={bH} fill={col} opacity=".9" rx="0.5"/>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* Sentiment gauge */}
+          <div className="card" style={{textAlign:"center"}}>
+            <div className="card-title mb-3">Neural Sentiment</div>
+            <div style={{position:"relative",width:180,height:90,margin:"0 auto 12px"}}>
+              <svg width="180" height="90" viewBox="0 0 180 90">
+                <path d="M 14 88 A 76 76 0 0 1 166 88" fill="none" stroke="var(--border)" strokeWidth="14" strokeLinecap="round"/>
+                <path d="M 14 88 A 76 76 0 0 1 166 88" fill="none" stroke="var(--green)" strokeWidth="14" strokeLinecap="round" strokeDasharray="238" strokeDashoffset="30"/>
+                <text x="90" y="68" textAnchor="middle" fontFamily="var(--fm)" fontSize="24" fontWeight="700" fill="var(--green)">89.5</text>
+                <text x="90" y="84" textAnchor="middle" fontFamily="var(--fb)" fontSize="9" fill="var(--ink3)">/100</text>
+              </svg>
+            </div>
+            <div style={{fontSize:15,fontWeight:700,color:"var(--green)",letterSpacing:"0.06em",marginBottom:4}}>VERY BULLISH</div>
+            <div style={{fontSize:12,color:"var(--ink3)"}}>AI Model Consensus: Positive Momentum</div>
+          </div>
+        </div>
+
+        {/* AI Trade Recommendation */}
+        <div className="card" style={{alignSelf:"start"}}>
+          <div className="card-title mb-4">AI Trade Recommendation</div>
+          <div style={{background:"rgba(76,175,125,.08)",border:"1px solid rgba(76,175,125,.2)",borderRadius:"var(--r)",padding:"12px",marginBottom:16,textAlign:"center"}}>
+            <div style={{fontSize:10,color:"var(--green)",fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:4}}>Signal</div>
+            <div style={{fontSize:18,fontWeight:700,color:"var(--green)",fontFamily:"var(--fm)"}}>BUY BTC/USD</div>
+          </div>
+          {[
+            {label:"Confidence Score",val:"87/100",   color:"var(--green)"},
+            {label:"Entry Price",     val:"$30,450",  color:"var(--ink)"  },
+            {label:"Target",          val:"$41,000",  color:"var(--green)"},
+            {label:"Stop Loss",       val:"$27,500",  color:"var(--red)"  },
+          ].map((r,i) => (
+            <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:i<3?"1px solid var(--border)":"none"}}>
+              <span style={{fontSize:12,color:"var(--ink3)"}}>{r.label}</span>
+              <span style={{fontSize:12,fontWeight:600,color:r.color,fontFamily:"var(--fm)"}}>{r.val}</span>
+            </div>
+          ))}
+          <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",marginTop:16,padding:"10px"}}>
+            Execute Trade ↓
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Security ─────────────────────────────────────────────────────
+function SecurityPage({ toast }) {
+  const [biometric, setBiometric] = useState(true);
+
+  const sessions = [
+    {device:"MacBook Pro",   location:"New York, USA",  time:"Today, 10:42 AM",      current:true  },
+    {device:"iPhone 14 Pro", location:"London, UK",     time:"Yesterday, 3:15 PM",   current:false },
+    {device:"Windows PC",    location:"Tokyo, Japan",   time:"2 days ago, 11:20 AM", current:false },
+  ];
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Security & Compliance</div>
+        <div className="page-sub">Monitor access, detect threats, and manage compliance</div>
+      </div>
+
+      <div className="grid-2 mb-4">
+        {/* Biometric toggle */}
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"var(--ink)",fontFamily:"var(--fb)",marginBottom:4}}>Biometric Security</div>
+              <div style={{fontSize:12,color:"var(--ink3)"}}>Enable fingerprint / Face ID authentication</div>
+            </div>
+            <div onClick={() => setBiometric(b => !b)}
+              style={{width:46,height:26,borderRadius:13,background:biometric?"var(--green)":"var(--border2)",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:"white",position:"absolute",top:3,left:biometric?23:3,transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.35)"}}/>
+            </div>
+          </div>
+        </div>
+
+        {/* Neural Fraud Detection */}
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"var(--ink)",fontFamily:"var(--fb)",marginBottom:4}}>Neural Fraud Detection</div>
+              <div style={{fontSize:12,color:"var(--green)"}}>● Active & Monitoring</div>
+            </div>
+            <div style={{position:"relative",width:60,height:60,flexShrink:0}}>
+              <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(76,175,125,.15)" strokeWidth="2"/>
+                <circle cx="30" cy="30" r="26" fill="none" stroke="var(--green)" strokeWidth="2" strokeDasharray="163" strokeDashoffset="40" strokeLinecap="round" style={{animation:"spin 3s linear infinite",transformOrigin:"30px 30px"}}/>
+                <circle cx="30" cy="30" r="16" fill="none" stroke="rgba(76,175,125,.1)" strokeWidth="1.5"/>
+                <circle cx="30" cy="30" r="4" fill="var(--green)" opacity=".8"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Sessions */}
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        <div style={{padding:"14px 18px",borderBottom:"1px solid var(--border)"}}>
+          <div className="card-title">Active Sessions</div>
+        </div>
+        <table className="table">
+          <thead><tr><th>Device</th><th>Location</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody>
+            {sessions.map((s,i) => (
+              <tr key={i}>
+                <td>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:13,color:"var(--ink)",fontWeight:500}}>{s.device}</span>
+                    {s.current && <span className="badge badge-green" style={{fontSize:9}}>Current</span>}
+                  </div>
+                </td>
+                <td style={{fontSize:12.5,color:"var(--ink2)"}}>{s.location}</td>
+                <td style={{fontSize:12,color:"var(--ink3)"}}>{s.time}</td>
+                <td>
+                  {!s.current && (
+                    <button className="btn btn-ghost btn-sm" style={{color:"var(--red)",borderColor:"rgba(224,92,92,.3)"}}
+                      onClick={() => toast("Session revoked","success")}>Revoke</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sustainability ────────────────────────────────────────────────
+function SustainabilityPage() {
+  const score = 85;
+  const circ  = 2 * Math.PI * 54;
+  const off   = circ * (1 - score / 100);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Sustainability & Green Tech Impact</div>
+        <div className="page-sub">Track your environmental impact and green investments</div>
+      </div>
+
+      {/* Green Finance Score */}
+      <div className="card" style={{textAlign:"center",marginBottom:16}}>
+        <div style={{position:"relative",width:180,height:180,margin:"0 auto 16px"}}>
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="54" fill="none" stroke="var(--border)" strokeWidth="12"/>
+            <circle cx="90" cy="90" r="54" fill="none" stroke="var(--green)" strokeWidth="12"
+              strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" transform="rotate(-90 90 90)"/>
+            <text x="90" y="84" textAnchor="middle" fontFamily="var(--fm)" fontSize="34" fontWeight="700" fill="var(--green)">{score}</text>
+            <text x="90" y="101" textAnchor="middle" fontFamily="var(--fb)" fontSize="11" fill="var(--ink3)">/100</text>
+            <text x="90" y="116" textAnchor="middle" fontFamily="var(--fb)" fontSize="9" fill="var(--green)" letterSpacing="1.5">GREEN SCORE</text>
+          </svg>
+        </div>
+        <div style={{fontSize:15,fontWeight:600,color:"var(--ink)",marginBottom:6}}>Excellent!</div>
+        <div style={{fontSize:13,color:"var(--ink3)",maxWidth:320,margin:"0 auto"}}>
+          Your investment supports sustainable and green money
+        </div>
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-title mb-3">Carbon Offset</div>
+          <div style={{fontFamily:"var(--fm)",fontSize:30,fontWeight:700,color:"var(--green)",marginBottom:4}}>1,500 kg</div>
+          <div style={{fontSize:12,color:"var(--ink3)",marginBottom:14}}>CO₂ Offset this period</div>
+          <div style={{height:7,background:"var(--border)",borderRadius:99,overflow:"hidden",marginBottom:6}}>
+            <div style={{width:"68%",height:"100%",background:"var(--green)",borderRadius:99}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--ink3)"}}>
+            <span>Total: 3,300 kg</span><span>Target: 5,000 kg</span>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-title mb-3">Green Investment</div>
+          <div style={{fontFamily:"var(--fm)",fontSize:30,fontWeight:700,color:"var(--green)",marginBottom:4}}>+12.4%</div>
+          <div style={{fontSize:12,color:"var(--ink3)",marginBottom:14}}>Monthly performance</div>
+          <svg width="100%" height="44" viewBox="0 0 100 44" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--green)" stopOpacity=".2"/>
+                <stop offset="100%" stopColor="var(--green)" stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            <polygon points="0,44 0,38 15,30 30,34 45,20 60,24 75,12 90,9 100,5 100,44" fill="url(#greenGrad)"/>
+            <polyline points="0,38 15,30 30,34 45,20 60,24 75,12 90,9 100,5" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Notifications ────────────────────────────────────────────────
+function NotificationsPage() {
+  const [filter, setFilter] = useState("all");
+
+  const notifications = [
+    {type:"ai",          icon:"ai",     title:"Portfolio Optimization Opportunity",          body:"Our algorithms detected a 14% potential growth in sustainable energy sectors. Review recommendations.", time:"3 hours ago"},
+    {type:"security",    icon:"alert",  title:"Security Alert: New Device Login Detected",   body:"A new login from 'Unknown Device (Chrome on Windows)' was reported from Seattle, WA.",                time:"Yesterday at 4:45 PM"},
+    {type:"transaction", icon:"chart",  title:"Transaction Update: Investment Deposited",    body:"$5,000.00 has been successfully deposited into your Green Future Fund.",                               time:"Dec 15, 2023"},
+    {type:"ai",          icon:"ai",     title:"AI Insight: Market Trend Analysis",           body:"Significant movement in carbon credit markets. Consider adjusting your exposure.",                     time:"Dec 30, 2023"},
+  ];
+
+  const tabs = [
+    {id:"all",          label:"Smart Filter"},
+    {id:"ai",           label:"AI Insight"},
+    {id:"security",     label:"Security Alert"},
+    {id:"transaction",  label:"Transaction Update"},
+  ];
+
+  const iconColor = {ai:"var(--gold)",security:"var(--red)",transaction:"var(--green)"};
+  const filtered  = filter === "all" ? notifications : notifications.filter(n => n.type === filter);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Smart Notification Center</div>
+        <div className="page-sub">AI-curated alerts and portfolio updates</div>
+      </div>
+
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setFilter(t.id)}
+            style={{padding:"7px 16px",borderRadius:99,border:`1px solid ${filter===t.id?"var(--gold)":"var(--border)"}`,background:filter===t.id?"rgba(200,146,74,.1)":"var(--surface)",color:filter===t.id?"var(--gold)":"var(--ink3)",fontSize:12.5,fontWeight:filter===t.id?600:400,cursor:"pointer",transition:"all .13s",fontFamily:"var(--fb)"}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        {filtered.map((n,i) => (
+          <div key={i} className="card" style={{display:"flex",gap:14,padding:"16px 18px"}}>
+            <div style={{width:40,height:40,borderRadius:10,background:`${iconColor[n.type]}18`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:`1px solid ${iconColor[n.type]}28`}}>
+              <IC n={n.icon} s={17} c={iconColor[n.type]}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13.5,fontWeight:600,color:"var(--ink)",fontFamily:"var(--fb)",marginBottom:5}}>{n.title}</div>
+              <div style={{fontSize:13,color:"var(--ink2)",lineHeight:1.6,marginBottom:8}}>{n.body}</div>
+              <div style={{fontSize:11,color:"var(--ink3)"}}>{n.time}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Referral ─────────────────────────────────────────────────────
+function ReferralPage({ user, toast }) {
+  const link = `exfinanalyze.com/ref/${user?.email?.split("@")[0] || "user"}`;
+
+  const leaderboard = [
+    {name:"Alex Johnson", amount:"$2,100",rank:1},
+    {name:"Sarah Chen",   amount:"$1,850",rank:2},
+    {name:"Michael D.",   amount:"$1,400",rank:3},
+    {name:"Bob Johnson",  amount:"$1,200",rank:4},
+    {name:"William A.",   amount:"$1,100",rank:5},
+    {name:"Sarah Chen II",amount:"$1,000",rank:6},
+    {name:"Michael D. II",amount:"$800",  rank:7},
+  ];
+
+  const badges = [
+    {icon:"⚡",label:"Early Adopter",   pts:"$0",   earned:true  },
+    {icon:"📈",label:"Power Investor",  pts:"$10",  earned:true  },
+    {icon:"🌱",label:"Growth Catalyst", pts:"$25",  earned:false },
+    {icon:"🏆",label:"Community Builder",pts:"$50", earned:false },
+    {icon:"👁",label:"Visionary",       pts:"$100", earned:false },
+  ];
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Referral & Rewards Hub</div>
+        <div className="page-sub">Invite friends and earn rewards for every successful referral</div>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:16}}>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          {/* Invite & Earn */}
+          <div className="card" style={{textAlign:"center",padding:"32px 28px"}}>
+            <div style={{fontSize:24,fontWeight:700,fontFamily:"var(--fd)",color:"var(--ink)",marginBottom:8}}>Invite & Earn</div>
+            <div style={{fontSize:13,color:"var(--ink3)",marginBottom:24,maxWidth:340,margin:"0 auto 24px"}}>
+              Share your unique link and earn rewards for every successful referral
+            </div>
+            <div style={{display:"flex",gap:8,maxWidth:420,margin:"0 auto 12px"}}>
+              <input readOnly value={link}
+                style={{flex:1,padding:"9px 12px",background:"var(--card2)",border:"1px solid var(--border)",borderRadius:"var(--r)",color:"var(--ink2)",fontSize:12.5,fontFamily:"var(--fm)",outline:"none"}}/>
+              <button className="btn btn-primary" style={{flexShrink:0}} onClick={() => {navigator.clipboard.writeText(link); toast("Link copied!","success");}}>Copy</button>
+            </div>
+            <button className="btn btn-ghost" onClick={() => toast("Shared!","success")}>Share on Social</button>
+          </div>
+
+          {/* Rewards Progress */}
+          <div className="card">
+            <div className="card-title mb-4">Rewards Progress</div>
+            <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+              {badges.map((b,i) => (
+                <div key={i} style={{flex:1,textAlign:"center"}}>
+                  <div style={{width:52,height:52,borderRadius:"50%",background:b.earned?"rgba(200,146,74,.15)":"var(--card2)",border:`2px solid ${b.earned?"var(--gold)":"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 8px"}}>
+                    {b.icon}
+                  </div>
+                  <div style={{fontSize:10,color:b.earned?"var(--gold)":"var(--ink3)",fontWeight:b.earned?600:400,lineHeight:1.3}}>{b.label}</div>
+                  <div style={{fontSize:10,color:"var(--ink3)",fontFamily:"var(--fm)",marginTop:2}}>{b.pts}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Leaderboard */}
+        <div className="card">
+          <div className="card-title mb-4">Top Referrers</div>
+          {leaderboard.map((l,i) => (
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<leaderboard.length-1?"1px solid var(--border)":"none"}}>
+              <div style={{width:22,fontSize:11,color:i<3?"var(--gold)":"var(--ink3)",fontWeight:700,fontFamily:"var(--fm)",textAlign:"center",flexShrink:0}}>#{l.rank}</div>
+              <div style={{width:28,height:28,borderRadius:"50%",background:"var(--card2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"var(--ink2)",flexShrink:0}}>
+                {l.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
+              </div>
+              <div style={{flex:1,fontSize:12.5,color:"var(--ink)",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.name}</div>
+              <div style={{fontSize:12.5,fontWeight:700,color:"var(--gold)",fontFamily:"var(--fm)",flexShrink:0}}>{l.amount}</div>
             </div>
           ))}
         </div>
@@ -868,8 +1267,6 @@ function ReportsPage({ user, docs, toast }) {
   const [projectId, setProjectId] = useState("all");
 
   const projects  = projectStore.get(user.id);
-  const userName  = user.user_metadata?.name || user.email?.split("@")[0] || "Unknown";
-  const userRole  = user.user_metadata?.role || "Analyst";
 
   const selectedDocs = projectId === "all"
     ? docs
@@ -1884,15 +2281,36 @@ export default function App() {
   const pending  = docs.filter(d => d.status === "pending").length;
 
   const projectCount = projectStore.get(user.id).length;
-  const NAV = [
-    { id: "dashboard", label: "Dashboard",  icon: "dash"     },
-    { id: "documents", label: "Documents",  icon: "docs",  badge: pending || null },
-    { id: "projects",  label: "Projects",   icon: "folder", badge: projectCount || null },
-    { id: "analyze",   label: "AI Analysis",icon: "ai"       },
-    { id: "reports",   label: "Reports",    icon: "report"   },
-    { id: "incentive", label: "Incentives", icon: "chart"    },
-    { id: "settings",  label: "Settings",   icon: "settings" },
+  const NAV_SECTIONS = [
+    {
+      heading: "Workspace",
+      items: [
+        { id: "dashboard", label: "Dashboard",   icon: "dash"                         },
+        { id: "documents", label: "Documents",   icon: "docs",   badge: pending||null },
+        { id: "projects",  label: "Projects",    icon: "folder", badge: projectCount||null },
+        { id: "analyze",   label: "AI Analysis", icon: "ai"                           },
+        { id: "reports",   label: "Reports",     icon: "report"                       },
+        { id: "incentive", label: "Incentives",  icon: "chart"                        },
+      ],
+    },
+    {
+      heading: "Portfolio",
+      items: [
+        { id: "market",         label: "Market",        icon: "chart" },
+        { id: "sustainability", label: "Sustainability", icon: "star"  },
+        { id: "notifications",  label: "Notifications", icon: "bell"  },
+        { id: "referrals",      label: "Referrals",     icon: "users" },
+      ],
+    },
+    {
+      heading: "Account",
+      items: [
+        { id: "security", label: "Security", icon: "lock"     },
+        { id: "settings", label: "Settings", icon: "settings" },
+      ],
+    },
   ];
+  const NAV = NAV_SECTIONS.flatMap(s => s.items);
 
   return (
     <div className="app">
@@ -1906,13 +2324,17 @@ export default function App() {
           <div className="logo-sub">Financial Intelligence</div>
         </div>
         <nav className="nav">
-          <div className="nav-section">Workspace</div>
-          {NAV.map(item => (
-            <button key={item.id} className={`nav-item${page===item.id?" active":""}`} onClick={() => setPage(item.id)}>
-              <IC n={item.icon} s={14} />
-              {item.label}
-              {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
-            </button>
+          {NAV_SECTIONS.map(section => (
+            <div key={section.heading}>
+              <div className="nav-section">{section.heading}</div>
+              {section.items.map(item => (
+                <button key={item.id} className={`nav-item${page===item.id?" active":""}`} onClick={() => setPage(item.id)}>
+                  <IC n={item.icon} s={14} />
+                  {item.label}
+                  {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="user-area">
@@ -1945,13 +2367,18 @@ export default function App() {
 
         {/* Content */}
         <div className="content">
-          {page === "dashboard" && <Dashboard  user={user} docs={docs} setPage={setPage} />}
-          {page === "documents" && <DocumentsPage user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
-          {page === "analyze"   && <AnalyzePage   user={user} docs={docs} setDocs={setDocs} toast={toast} selectedDoc={selectedDoc} setSelectedDoc={setSelectedDoc} />}
-          {page === "projects"  && <ProjectsPage  user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
-          {page === "reports"   && <ReportsPage   user={user} docs={docs} toast={toast} />}
-          {page === "incentive" && <IncentivePage />}
-          {page === "settings"  && <SettingsPage  user={user} toast={toast} />}
+          {page === "dashboard"     && <Dashboard         user={user} docs={docs} setPage={setPage} />}
+          {page === "documents"     && <DocumentsPage     user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
+          {page === "analyze"       && <AnalyzePage       user={user} docs={docs} setDocs={setDocs} toast={toast} selectedDoc={selectedDoc} setSelectedDoc={setSelectedDoc} />}
+          {page === "projects"      && <ProjectsPage      user={user} docs={docs} setDocs={setDocs} toast={toast} setPage={setPage} setSelectedDoc={setSelectedDoc} />}
+          {page === "reports"       && <ReportsPage       user={user} docs={docs} toast={toast} />}
+          {page === "incentive"     && <IncentivePage />}
+          {page === "market"        && <MarketPage />}
+          {page === "security"      && <SecurityPage      toast={toast} />}
+          {page === "sustainability" && <SustainabilityPage />}
+          {page === "notifications" && <NotificationsPage />}
+          {page === "referrals"     && <ReferralPage      user={user} toast={toast} />}
+          {page === "settings"      && <SettingsPage      user={user} toast={toast} />}
         </div>
       </main>
 
