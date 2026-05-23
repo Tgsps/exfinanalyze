@@ -4,8 +4,6 @@ import { useCountUp } from "./hooks/useCountUp";
 import { useVis } from "./hooks/useVis";
 import WaitlistForm from "./components/WaitlistForm";
 import MockExtract from "./components/mocks/MockExtract";
-import MockShadow from "./components/mocks/MockShadow";
-import MockClose from "./components/mocks/MockClose";
 
 /* Responsive overrides — everything else lives in index.css */
 const ANIM = `
@@ -29,25 +27,24 @@ const TICKER_ITEMS = [
 
 const FEATURES = [
   {
-    tag:"01 — Extraction", tc:"var(--gold-p)", tt:"var(--gold)",
-    title:"Template-free document intelligence",
-    body:"Drop any PDF, contract, or Excel file. ExFinAnalyze reads it without templates — extracting every field with a confidence score and a citation to the exact page and clause it came from.",
-    bullets:["Source-backed citations for every extracted field","Risk flags for pricing uplifts, liability gaps, and anomalies","Cross-reference POs, invoices, and bank statements automatically"],
-    bc:"var(--gold)", Mock:MockExtract, flip:false,
+    emoji: "📈",
+    title: "Autonomous Investing",
+    body: "Self-optimizing portfolios driven by adaptive machine learning models for consistent, data-backed returns.",
   },
   {
-    tag:"02 — Learning", tc:"#E8F0EB", tt:"var(--green)",
-    title:"AI Shadow Reviewer — learn on real work",
-    body:"Unlike any tool on the market, ExFinAnalyze works alongside junior employees — showing what the AI would have decided, and why. Every accounting standard decision explained in plain English.",
-    bullets:["Parallel AI review with step-by-step reasoning","Instant ASC 842 / ASC 606 explanations on every decision","Flags when it disagrees — and teaches why"],
-    bc:"var(--green)", Mock:MockShadow, flip:true,
+    emoji: "🛡️",
+    title: "Neural Security",
+    body: "Proactive, AI-powered threat detection and fraud prevention, safeguarding assets in real-time.",
   },
   {
-    tag:"03 — Close", tc:"#EEF0F8", tt:"#3B4F8C",
-    title:"Month-end close, without the crunch",
-    body:"Real-time variance analysis, 100% transaction anomaly detection, and AI-generated MD&A narratives — all in one dashboard. Close faster with less stress, every single month.",
-    bullets:["Scans every transaction, not just a sample","AI writes the management commentary first draft","Anomaly alerts before they become audit issues"],
-    bc:"#3B4F8C", Mock:MockClose, flip:false,
+    emoji: "🔮",
+    title: "Predictive Analytics",
+    body: "Forecast market trends and financial outcomes with unparalleled accuracy using advanced predictive algorithms.",
+  },
+  {
+    emoji: "⚡",
+    title: "Smart Automation",
+    body: "Streamline operations, reduce manual tasks, and execute complex financial strategies with intelligent workflows.",
   },
 ];
 
@@ -58,9 +55,9 @@ const PROBLEMS = [
 ];
 
 const PRICING = [
-  { tier:"Starter", price:"Free", period:"forever", desc:"For individual accountants exploring AI-assisted analysis.", features:["5 documents/month","Basic extraction","ASC 842 lease classifier","Email support"], cta:"Get started free", hi:false, action:"waitlist" },
-  { tier:"Professional", price:"$49", period:"/month", desc:"For growing teams who need speed and accuracy at month-end.", features:["Unlimited documents","AI Shadow Reviewer","Month-end close dashboard","Priority support","Export to QuickBooks & Xero"], cta:"Join waitlist — 40% off", hi:true, action:"waitlist" },
-  { tier:"Team", price:"Custom", period:"", desc:"For accounting firms and corporate finance departments.", features:["Everything in Professional","Multi-entity close management","SSO & audit trail","Dedicated onboarding","SLA + SOC 2 Type II"], cta:"Contact sales", hi:false, action:"contact" },
+  { tier:"Starter", price:"$49", period:"/month", desc:"For individual investors exploring AI-assisted analysis.", features:["AI Asset Analysis","5 Portfolio Trackers","Limited Green Tech Reports","Standard Support"], cta:"Get Started", hi:false, action:"waitlist" },
+  { tier:"Professional", price:"$149", period:"/month", desc:"For active investors who need speed and accuracy.", features:["Advanced AI Predictions","Unlimited Portfolio Trackers","Exclusive Green Tech Reports","Priority 24/7 Support","API Access","Custom Alerts","Team Collaboration"], cta:"Upgrade Now", hi:true, action:"waitlist" },
+  { tier:"Enterprise", price:"Contact Sales", period:"", desc:"For firms and institutions needing full-suite AI tools.", features:["Full Suite AI Tools","Portfolio Account Manager","Bespoke Green-Tech Solutions","SLA Support","Green Economy Scoreboard","Custom Discount"], cta:"Contact us", hi:false, action:"contact" },
 ];
 
 export default function LandingPage() {
@@ -142,7 +139,7 @@ export default function LandingPage() {
                 <span style={{ fontSize: 11, color: "var(--gold)", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Early Access Open</span>
               </div>
               <h1 style={{ fontFamily: "var(--fd)", fontSize: 54, fontWeight: 500, lineHeight: 1.05, letterSpacing: "-0.03em", color: "var(--ink)", marginBottom: 20 }}>
-                From document<br />to decision,<br /><em style={{ fontStyle: "italic", color: "var(--gold)" }}>in minutes.</em>
+                The Future of Finance,<br /><em style={{ fontStyle: "italic", color: "var(--gold)" }}>Powered by Intelligence.</em>
               </h1>
               <p style={{ fontSize: 16, color: "var(--ink-60)", lineHeight: 1.7, maxWidth: 420, marginBottom: 36 }}>
                 ExFinAnalyze extracts, analyzes and validates financial documents with AI — then coaches your junior team through every decision. Built for accountants, not engineers.
@@ -156,7 +153,7 @@ export default function LandingPage() {
                 <a href="#features" style={{ padding: "14px 28px", background: "transparent", color: "var(--ink)", border: "1.5px solid var(--border)", borderRadius: 4, fontFamily: "var(--fb)", fontWeight: 500, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", transition: "border-color .2s" }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--ink)")}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}>
-                  See how it works
+                  See the Platform
                 </a>
               </div>
               <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 16 }}>
@@ -220,32 +217,21 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section id="features" style={{ padding: "96px 40px" }}>
         <div className="wrap">
-          <div style={{ textAlign: "center", maxWidth: 540, margin: "0 auto 72px" }}>
+          <div style={{ textAlign: "center", maxWidth: 580, margin: "0 auto 60px" }}>
             <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>Core Features</div>
-            <h2 style={{ fontFamily: "var(--fd)", fontSize: 40, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>Three tools.<br /><em>One workflow.</em></h2>
+            <h2 style={{ fontFamily: "var(--fd)", fontSize: 40, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>Empowering your financial future<br /><em>with next-generation AI.</em></h2>
           </div>
-          {FEATURES.map(({ tag, tc, tt, title, body, bullets, bc, Mock, flip }, i) => (
-            <div key={i} className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center", marginBottom: i < 2 ? 100 : 0 }}>
-              <div style={{ order: flip ? 2 : 1 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", background: tc, borderRadius: 20, marginBottom: 20, fontSize: 12, color: tt, fontWeight: 600 }}>{tag}</div>
-                <h3 style={{ fontFamily: "var(--fd)", fontSize: 30, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.15, color: "var(--ink)", marginBottom: 16 }}>{title}</h3>
-                <p style={{ fontSize: 15, color: "var(--ink-60)", lineHeight: 1.7, marginBottom: 24 }}>{body}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {bullets.map((b, j) => (
-                    <div key={j} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                      <div style={{ width: 18, height: 18, borderRadius: "50%", background: tc, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                        <span style={{ fontSize: 9, color: bc, fontWeight: 700 }}>✓</span>
-                      </div>
-                      <span style={{ fontSize: 14, color: "var(--ink-60)", lineHeight: 1.5 }}>{b}</span>
-                    </div>
-                  ))}
-                </div>
+          <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 24, maxWidth: 860, margin: "0 auto" }}>
+            {FEATURES.map(({ emoji, title, body }, i) => (
+              <div key={i} style={{ padding: 32, border: "1.5px solid var(--border)", borderRadius: 6, background: "var(--white)", transition: "transform .25s,box-shadow .25s", cursor: "default" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--sl)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div style={{ fontSize: 28, marginBottom: 16 }}>{emoji}</div>
+                <div style={{ fontFamily: "var(--fd)", fontSize: 20, fontWeight: 500, marginBottom: 10, color: "var(--ink)" }}>{title}</div>
+                <div style={{ fontSize: 14, color: "var(--ink-60)", lineHeight: 1.65 }}>{body}</div>
               </div>
-              <div style={{ order: flip ? 1 : 2, animation: `float ${6+i}s ease-in-out ${i*0.4}s infinite` }}>
-                <Mock />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -284,17 +270,17 @@ export default function LandingPage() {
           <div style={{ textAlign: "center", maxWidth: 540, margin: "0 auto 52px" }}>
             <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>Pricing</div>
             <h2 style={{ fontFamily: "var(--fd)", fontSize: 40, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>Priced for the individual.<br /><em>Sold to the firm.</em></h2>
-            <p style={{ marginTop: 14, fontSize: 14, color: "var(--ink-60)" }}>No seat minimums. No 6-month onboarding. Start in minutes.</p>
+            <p style={{ marginTop: 14, fontSize: 14, color: "var(--ink-60)" }}>Unlock AI-powered fintech solutions. No contracts, cancel anytime.</p>
           </div>
           <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22, maxWidth: 900, margin: "0 auto" }}>
             {PRICING.map((p, i) => (
               <div key={i} style={{ padding: 28, border: p.hi ? "2px solid var(--ink)" : "1.5px solid var(--border)", borderRadius: 6, position: "relative", background: p.hi ? "var(--ink)" : "var(--white)", transition: "transform .2s,box-shadow .2s" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--sl)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                {p.hi && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "var(--gold)", color: "var(--ink)", padding: "3px 14px", borderRadius: 20, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>EARLY ACCESS DEAL</div>}
+                {p.hi && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "var(--gold)", color: "var(--ink)", padding: "3px 14px", borderRadius: 20, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>MOST POPULAR</div>}
                 <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: p.hi ? "var(--gold-l)" : "var(--ink-30)", fontWeight: 600, marginBottom: 10 }}>{p.tier}</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
-                  <span style={{ fontFamily: "var(--fd)", fontSize: 40, fontWeight: 600, color: p.hi ? "var(--cream)" : "var(--ink)", letterSpacing: "-0.04em" }}>{p.price}</span>
+                  <span style={{ fontFamily: "var(--fd)", fontSize: p.price.startsWith("$") ? 40 : 24, fontWeight: 600, color: p.hi ? "var(--cream)" : "var(--ink)", letterSpacing: "-0.04em" }}>{p.price}</span>
                   <span style={{ fontSize: 13, color: p.hi ? "#8B8983" : "var(--ink-60)" }}>{p.period}</span>
                 </div>
                 <p style={{ fontSize: 13, color: p.hi ? "#8B8983" : "var(--ink-60)", lineHeight: 1.5, marginBottom: 18, minHeight: 38 }}>{p.desc}</p>
@@ -375,6 +361,11 @@ export default function LandingPage() {
                   onMouseLeave={e => (e.target.style.color = "#6B6963")}>{l}</a>
               ))}
             </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap", paddingBottom: 20, marginBottom: 20, borderBottom: "1px solid #2A2820" }}>
+            {["TechGreen","SustaiFinance","GlobalAI","EcoData","SecureNet"].map(name => (
+              <span key={name} style={{ fontSize: 12, fontWeight: 600, color: "#4A4840", fontFamily: "var(--fb)", letterSpacing: "0.04em" }}>{name}</span>
+            ))}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 12, color: "#4A4840" }}>© 2026 ExFinAnalyze. All rights reserved.</div>
