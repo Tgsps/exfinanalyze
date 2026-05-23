@@ -142,7 +142,7 @@ export default function LandingPage() {
                 The Future of Finance,<br /><em style={{ fontStyle: "italic", color: "var(--gold)" }}>Powered by Intelligence.</em>
               </h1>
               <p style={{ fontSize: 16, color: "var(--ink-60)", lineHeight: 1.7, maxWidth: 420, marginBottom: 36 }}>
-                ExFinAnalyze extracts, analyzes and validates financial documents with AI — then coaches your junior team through every decision. Built for accountants, not engineers.
+                Harness the power of AI to grow, protect, and optimize your financial portfolio — with autonomous investing, neural security, and predictive analytics working for you around the clock.
               </p>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <button onClick={scrollTo} style={PB}

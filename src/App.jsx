@@ -498,8 +498,19 @@ function DocumentsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) 
           </span>
           <input className="input" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 30, width: 200 }} />
         </div>
-        {["all", "pdf", "excel", "contract", "analyzed", "pending"].map(f => (
-          <button key={f} className={`btn btn-sm ${filter === f ? "btn-primary" : "btn-ghost"}`} onClick={() => setFilter(f)} style={{ textTransform: "capitalize" }}>{f}</button>
+        {[
+          { id: "all",      label: "All",      dot: "var(--ink3)"  },
+          { id: "pdf",      label: "PDF",      dot: "var(--red)"   },
+          { id: "excel",    label: "Excel",    dot: "var(--green)" },
+          { id: "contract", label: "Contract", dot: "var(--blue)"  },
+          { id: "analyzed", label: "Analyzed", dot: "var(--green)" },
+          { id: "pending",  label: "Pending",  dot: "var(--gold)"  },
+        ].map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)}
+            style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:99, fontSize:12, fontWeight:filter===f.id?600:400, cursor:"pointer", border:`1px solid ${filter===f.id?"var(--gold)":"var(--border)"}`, background:filter===f.id?"rgba(200,146,74,.1)":"var(--surface)", color:filter===f.id?"var(--gold)":"var(--ink3)", transition:"all .13s" }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:f.dot, flexShrink:0, opacity:filter===f.id?1:.5 }} />
+            {f.label}
+          </button>
         ))}
       </div>
 
@@ -706,18 +717,40 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
           {/* Messages area */}
           <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
             {chat.length === 0 && !loading && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12 }}>
-                <div style={{ fontSize: 40 }}>🤖</div>
-                <div style={{ fontSize: 13, color: "var(--ink2)", fontWeight: 500 }}>
-                  {currentDoc ? "Run an analysis or ask a question about your document" : "Select a document to start"}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 16 }}>
+                {/* Neural AI visual */}
+                <div style={{ position: "relative", width: 80, height: 80 }}>
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                    <circle cx="40" cy="40" r="38" stroke="var(--border)" strokeWidth="1.5" />
+                    <circle cx="40" cy="40" r="28" stroke="rgba(200,146,74,.25)" strokeWidth="1" strokeDasharray="4 4" />
+                    {/* Nodes */}
+                    {[[40,14],[66,30],[66,50],[40,66],[14,50],[14,30]].map(([cx,cy],i) => (
+                      <circle key={i} cx={cx} cy={cy} r="4" fill="var(--surface)" stroke="rgba(200,146,74,.6)" strokeWidth="1.5" />
+                    ))}
+                    {/* Connections */}
+                    {[[40,14,66,30],[66,30,66,50],[66,50,40,66],[40,66,14,50],[14,50,14,30],[14,30,40,14],[40,14,40,66],[66,30,14,50],[66,50,14,30]].map(([x1,y1,x2,y2],i) => (
+                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(200,146,74,.12)" strokeWidth="1" />
+                    ))}
+                    {/* Center dot */}
+                    <circle cx="40" cy="40" r="6" fill="rgba(200,146,74,.15)" stroke="var(--gold)" strokeWidth="1.5" />
+                    <circle cx="40" cy="40" r="2.5" fill="var(--gold)" />
+                  </svg>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600, marginBottom: 4 }}>
+                    {currentDoc ? "Ready to analyze" : "Select a document to start"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--ink3)" }}>
+                    {currentDoc ? "Run an analysis mode or ask a question below" : "Upload a document from the Documents page"}
+                  </div>
                 </div>
                 {currentDoc && (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                     {["What are the key financial figures?", "Identify any risks", "Summarize in 3 bullet points"].map(q => (
                       <button key={q} onClick={() => { setInput(q); inputRef.current?.focus(); }}
                         style={{ padding: "6px 12px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--ink3)", fontSize: 11.5, cursor: "pointer", transition: "all .13s" }}
-                        onMouseEnter={e => e.target.style.borderColor="var(--gold)"}
-                        onMouseLeave={e => e.target.style.borderColor="var(--border)"}
+                        onMouseEnter={e => e.currentTarget.style.borderColor="var(--gold)"}
+                        onMouseLeave={e => e.currentTarget.style.borderColor="var(--border)"}
                       >{q}</button>
                     ))}
                   </div>
@@ -1490,26 +1523,21 @@ function IncentivePage() {
       </div>
 
       {mode === "single" && (
+        <div>
+          {/* Horizontal dept tabs */}
+          <div style={{ display:"flex", gap:0, marginBottom:18, border:"1px solid var(--border)", borderRadius:"var(--r)", overflow:"hidden", width:"fit-content" }}>
+            {DEPTS.map((d, i) => (
+              <button key={d.id} onClick={() => { setDeptId(d.id); setResult(null); }}
+                style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 20px", border:"none", borderRight:i<DEPTS.length-1?"1px solid var(--border)":"none", background:deptId===d.id?"rgba(200,146,74,.1)":"var(--surface)", color:deptId===d.id?"var(--gold)":"var(--ink3)", cursor:"pointer", fontFamily:"var(--fb)", fontSize:13, fontWeight:deptId===d.id?600:400, transition:"all .13s" }}>
+                <IC n={d.icon} s={12} c={deptId===d.id?"var(--gold)":"var(--ink3)"} />
+                {d.label}
+              </button>
+            ))}
+          </div>
+
         <div className="grid-2" style={{ alignItems:"start" }}>
           {/* Left: inputs */}
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-            {/* Dept selector */}
-            <div className="card">
-              <div className="card-title mb-3">Department</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {DEPTS.map(d => (
-                  <button key={d.id} onClick={() => { setDeptId(d.id); setResult(null); }}
-                    style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 11px", borderRadius:"var(--r)", border:`1px solid ${deptId===d.id?"var(--gold)":"var(--border)"}`, background:deptId===d.id?"rgba(200,146,74,.07)":"transparent", cursor:"pointer", textAlign:"left", transition:"all .13s" }}>
-                    <IC n={d.icon} s={13} c={deptId===d.id?"var(--gold)":"var(--ink3)"} />
-                    <div>
-                      <div style={{ fontSize:13, fontWeight:deptId===d.id?500:400, color:deptId===d.id?"var(--gold)":"var(--ink)", fontFamily:"var(--fb)" }}>{d.label}</div>
-                      <div style={{ fontSize:11, color:"var(--ink3)" }}>{d.sub}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Inputs */}
             <div className="card">
               <div className="card-title mb-3">Inputs</div>
@@ -1628,6 +1656,7 @@ function IncentivePage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       )}
 
