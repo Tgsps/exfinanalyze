@@ -3,76 +3,66 @@
 @tailwind utilities;
 
 /* ════════════════════════════════════════════════════════════════
-   ExFinAnalyze — Design Tokens
-   Fonts loaded via <head> in index.html — no @import here.
+   ExFinAnalyze — Design System v2
+   New dark green fintech theme. Fonts via index.html <head>.
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Neutrals ──────────────────────────────────────────────── */
-  --cream:        #F7F4ED;
-  --cream-2:      #F9F6F0;
-  --white:        #FFFFFF;
-  --ink:          #16140F;
-  --ink-80:       #2A2820;
-  --ink-60:       #5A574E;
-  --ink-30:       #B0ADA5;
-  --ink-15:       #C8C5BE;
-  --border:       #E0DAC8;
-  --border-soft:  #F0EDE3;
+  /* ── Dark Backgrounds ──────────────────────────────────────── */
+  --bg:       #09110D;
+  --surf:     #0D1510;
+  --card:     #111914;
+  --card2:    #161E18;
 
-  /* ── Gold ──────────────────────────────────────────────────── */
-  --gold:         #C8924A;
-  --gold-l:       #E8C88A;
-  --gold-p:       #F5ECD8;
+  /* ── Borders ───────────────────────────────────────────────── */
+  --border:   #1C2620;
+  --border2:  #243028;
 
-  /* ── Semantic ──────────────────────────────────────────────── */
-  --warn:         #9A3B2A;
-  --warn-bg:      #FEF2EF;
-  --warn-bg-2:    #FDF6E9;
-  --warn-border:  #F5C5BC;
-  --warn-border-2:#E8D9B5;
-  --green:        #2C5F42;
-  --green-bg:     #E8F0EB;
-  --blue:         #3B4F8C;
-  --blue-bg:      #EEF0F8;
+  /* ── Primary Green (replaces amber) ───────────────────────── */
+  --gold:     #00C97A;   /* primary accent — now vivid green */
+  --gold-l:   #33E895;   /* lighter green */
+  --gold-d:   #009E5F;   /* darker green */
 
-  /* ── On-ink (dark surfaces) ────────────────────────────────── */
-  --on-ink:       #E8E6DF;
-  --on-ink-60:    #A8A6A0;
-  --on-ink-30:    #6B6963;
-  --on-ink-15:    #4A4840;
+  /* ── Status / Data colors ──────────────────────────────────── */
+  --green:    #4CAF7D;   /* secondary positive green */
+  --red:      #E05C5C;
+  --blue:     #5C9BE0;
+  --purple:   #9B7FE8;
+  --amber:    #C8924A;   /* legacy amber, used sparingly */
 
-  /* ── Shadows ───────────────────────────────────────────────── */
-  --shadow-s:     0 2px 24px rgba(22,20,15,.08);
-  --shadow-l:     0 8px 48px rgba(22,20,15,.14);
-
-  /* Shorthand aliases used throughout the app */
-  --s:            var(--shadow-s);
-  --sl:           var(--shadow-l);
-
-  /* ── Radii ─────────────────────────────────────────────────── */
-  --radius-xs:    2px;
-  --radius-sm:    3px;
-  --radius-md:    4px;
-  --radius-lg:    6px;
-  --radius-xl:    8px;
-  --radius-pill:  20px;
-
-  /* ── Spacing ───────────────────────────────────────────────── */
-  --space-1:  4px;  --space-2:  8px;  --space-3:  12px;
-  --space-4:  16px; --space-5:  20px; --space-6:  24px;
-  --space-7:  32px; --space-8:  40px; --space-9:  48px;
-  --space-10: 64px; --space-11: 80px; --space-12: 96px;
+  /* ── Text ──────────────────────────────────────────────────── */
+  --ink:      #E8E4DC;
+  --ink2:     #A8A49C;
+  --ink3:     #6B6760;
 
   /* ── Font families ─────────────────────────────────────────── */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
-
-  /* Shorthand aliases used throughout the app */
-  --fd: var(--font-display);
+  --ff: var(--font-display);
   --fb: var(--font-body);
   --fm: var(--font-mono);
+  --fd: var(--font-display);
+
+  /* ── Shadows ───────────────────────────────────────────────── */
+  --shadow-s:   0 2px 16px rgba(0,0,0,.45);
+  --shadow-l:   0 8px 48px rgba(0,0,0,.65);
+  --shadow-glow:0 0 40px rgba(0,201,122,.12);
+  --s:  var(--shadow-s);
+  --sl: var(--shadow-l);
+
+  /* ── Radii ─────────────────────────────────────────────────── */
+  --r:   6px;
+  --r2:  10px;
+  --radius-xs:   2px;  --radius-sm:  4px;
+  --radius-md:   6px;  --radius-lg:  10px;
+  --radius-xl:   14px; --radius-pill:100px;
+
+  /* ── Spacing ───────────────────────────────────────────────── */
+  --space-1:4px;  --space-2:8px;   --space-3:12px;
+  --space-4:16px; --space-5:20px;  --space-6:24px;
+  --space-7:32px; --space-8:40px;  --space-9:48px;
+  --space-10:64px;--space-11:80px; --space-12:96px;
 
   /* ── Animation ─────────────────────────────────────────────── */
   --ease-out: cubic-bezier(.16,1,.3,1);
@@ -80,18 +70,39 @@
   --dur-fast: 150ms;
   --dur-base: 200ms;
   --dur-slow: 300ms;
+
+  /* ── Landing page aliases (legacy compat) ──────────────────── */
+  --cream:        #09110D;
+  --cream-2:      #0D1510;
+  --white:        #FFFFFF;
+  --border-soft:  #1C2620;
+  --gold-p:       rgba(0,201,122,.1);
+  --warn:         #E05C5C;
+  --warn-bg:      rgba(224,92,92,.1);
+  --warn-bg-2:    rgba(224,92,92,.06);
+  --warn-border:  rgba(224,92,92,.25);
+  --warn-border-2:rgba(224,92,92,.18);
+  --green-bg:     rgba(76,175,125,.1);
+  --blue-bg:      rgba(92,155,224,.1);
+  --on-ink:       #E8E4DC;
+  --on-ink-60:    #A8A49C;
+  --on-ink-30:    #6B6760;
+  --on-ink-15:    #4A4840;
+  --ink-80:       #C8C5BE;
+  --ink-60:       #A8A49C;
+  --ink-30:       #6B6760;
+  --ink-15:       #4A4840;
 }
 
 /* ════════════════════════════════════════════════════════════════
-   Base resets
+   Base
    ════════════════════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--cream);
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 15px;
@@ -101,11 +112,11 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   Semantic typography classes
+   Typography
    ════════════════════════════════════════════════════════════════ */
 .t-display {
   font-family: var(--font-display);
-  font-size: 54px;
+  font-size: clamp(38px, 6vw, 58px);
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -114,7 +125,7 @@ body {
 }
 .t-h1 {
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: clamp(28px, 4vw, 42px);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.025em;
@@ -123,10 +134,10 @@ body {
 }
 .t-h2 {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: clamp(22px, 3vw, 32px);
   font-weight: 500;
   line-height: 1.15;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0;
 }
@@ -138,9 +149,9 @@ body {
   color: var(--ink);
   margin: 0;
 }
-.t-body   { font-family: var(--font-body); font-size: 15px; line-height: 1.7;  color: var(--ink-60); }
-.t-body-2 { font-family: var(--font-body); font-size: 14px; line-height: 1.65; color: var(--ink-60); }
-.t-caption{ font-family: var(--font-body); font-size: 13px; line-height: 1.5;  color: var(--ink-60); }
+.t-body   { font-family:var(--font-body); font-size:15px; line-height:1.7;  color:var(--ink2); }
+.t-body-2 { font-family:var(--font-body); font-size:14px; line-height:1.65; color:var(--ink2); }
+.t-caption{ font-family:var(--font-body); font-size:13px; line-height:1.5;  color:var(--ink2); }
 .t-eyebrow {
   font-family: var(--font-body);
   font-size: 11px;
@@ -155,7 +166,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink-60);
+  color: var(--ink2);
 }
 .t-num {
   font-family: var(--font-mono);
@@ -166,20 +177,20 @@ body {
 }
 .t-italic { font-style: italic; color: var(--gold); }
 
-/* Layout helper used in landing page sections */
+/* Layout utility */
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 32px; }
 
 /* ════════════════════════════════════════════════════════════════
-   Shared keyframes
+   Keyframes
    ════════════════════════════════════════════════════════════════ */
-@keyframes efa-fade-up { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
-@keyframes efa-slide-up{ from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
-@keyframes efa-float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-@keyframes efa-pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
-@keyframes efa-spin    { to { transform:rotate(360deg) } }
-@keyframes efa-ticker  { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes efa-fade-up  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes efa-slide-up { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes efa-float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes efa-pulse    { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes efa-spin     { to{transform:rotate(360deg)} }
+@keyframes efa-ticker   { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes efa-glow     { 0%,100%{opacity:.5} 50%{opacity:1} }
 
-/* Aliases matching names used inline in LandingPage / AuthScreen */
 @keyframes fadeUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
@@ -187,10 +198,12 @@ body {
 @keyframes spin    { to{transform:rotate(360deg)} }
 @keyframes ticker  { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 @keyframes popIn   { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes scanline{ 0%{transform:translateY(-100%)} 100%{transform:translateY(400%)} }
 
 /* ════════════════════════════════════════════════════════════════
    Scrollbar
    ════════════════════════════════════════════════════════════════ */
-::-webkit-scrollbar        { width: 5px; }
-::-webkit-scrollbar-track  { background: var(--cream); }
-::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: var(--surf); }
+::-webkit-scrollbar-thumb  { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }

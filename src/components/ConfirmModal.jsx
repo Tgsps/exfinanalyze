@@ -10,17 +10,18 @@ export default function ConfirmModal({ message, onConfirm, onCancel, danger = fa
   return (
     <div
       style={{
-        position: "fixed", inset: 0, background: "rgba(22,20,15,.55)",
+        position: "fixed", inset: 0, background: "rgba(0,0,0,.65)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        zIndex: 9999, backdropFilter: "blur(4px)",
+        zIndex: 9999, backdropFilter: "blur(6px)",
       }}
       onClick={onCancel}
     >
       <div
         style={{
-          background: "#fff", borderRadius: 8, padding: "32px 28px",
-          maxWidth: 400, width: "90%", boxShadow: "0 16px 56px rgba(22,20,15,.2)",
-          border: "1px solid #E0DAC8",
+          background: "#111914", borderRadius: 12, padding: "32px 28px",
+          maxWidth: 400, width: "90%", boxShadow: "0 16px 56px rgba(0,0,0,.7)",
+          border: "1px solid #1C2620",
+          animation: "slideUp .2s ease forwards",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -28,8 +29,8 @@ export default function ConfirmModal({ message, onConfirm, onCancel, danger = fa
           {danger ? "⚠️" : "❓"}
         </div>
         <p style={{
-          fontSize: 15, color: "#16140F", textAlign: "center",
-          lineHeight: 1.6, marginBottom: 24, fontFamily: "system-ui, sans-serif",
+          fontSize: 14.5, color: "#E8E4DC", textAlign: "center",
+          lineHeight: 1.6, marginBottom: 24, fontFamily: "'DM Sans', system-ui, sans-serif",
         }}>
           {message}
         </p>
@@ -38,9 +39,13 @@ export default function ConfirmModal({ message, onConfirm, onCancel, danger = fa
             onClick={onCancel}
             style={{
               flex: 1, padding: "11px", background: "transparent",
-              border: "1.5px solid #E0DAC8", borderRadius: 4,
-              cursor: "pointer", fontSize: 14, fontWeight: 500,
+              border: "1px solid #243028", borderRadius: 8,
+              cursor: "pointer", fontSize: 13.5, fontWeight: 500,
+              color: "#A8A49C", fontFamily: "'DM Sans', sans-serif",
+              transition: "all .15s",
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#161E18"; e.currentTarget.style.color = "#E8E4DC"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#A8A49C"; }}
           >
             Cancel
           </button>
@@ -48,10 +53,15 @@ export default function ConfirmModal({ message, onConfirm, onCancel, danger = fa
             onClick={onConfirm}
             style={{
               flex: 1, padding: "11px",
-              background: danger ? "#9A3B2A" : "#16140F",
-              color: "#fff", border: "none", borderRadius: 4,
-              cursor: "pointer", fontSize: 14, fontWeight: 600,
+              background: danger ? "#E05C5C" : "#00C97A",
+              color: danger ? "#fff" : "#000",
+              border: "none", borderRadius: 8,
+              cursor: "pointer", fontSize: 13.5, fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "all .15s",
             }}
+            onMouseEnter={e => { e.currentTarget.style.filter = "brightness(1.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.filter = "none"; }}
           >
             {danger ? "Delete" : "Confirm"}
           </button>

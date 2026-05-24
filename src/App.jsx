@@ -103,51 +103,53 @@ const docStore = {
 
 // ─── CSS ──────────────────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0C0E0D;--surf:#111412;--card:#161918;--card2:#1B1E1C;
-  --border:#242826;--border2:#2E3330;
-  --gold:#C8924A;--gold-l:#E2A85C;--gold-d:#A37038;
-  --green:#4CAF7D;--red:#E05C5C;--blue:#5C9BE0;--purple:#9B7FE8;
+  --bg:#09110D;--surf:#0D1510;--card:#111914;--card2:#161E18;
+  --border:#1C2620;--border2:#243028;
+  --gold:#00C97A;--gold-l:#33E895;--gold-d:#009E5F;
+  --green:#4CAF7D;--red:#E05C5C;--blue:#5C9BE0;--purple:#9B7FE8;--amber:#00C97A;
   --ink:#E8E4DC;--ink2:#A8A49C;--ink3:#6B6760;
-  --ff:'Fraunces',Georgia,serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
-  --r:6px;--r2:10px;--shadow:0 4px 24px rgba(0,0,0,.45);
+  --ff:'Fraunces',Georgia,serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;--fd:'Fraunces',Georgia,serif;
+  --r:6px;--r2:10px;--shadow:0 4px 28px rgba(0,0,0,.55);
 }
 html,body,#root{height:100%;}
 body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--surf);}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--gold);}
 
 /* Layout */
 .app{display:flex;height:100vh;overflow:hidden;}
-.sidebar{width:216px;min-width:216px;background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.sidebar{width:220px;min-width:220px;background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;position:relative;}
+.sidebar::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(0,201,122,.15) 40%,transparent);}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;background:var(--surf);flex-shrink:0;}
 .content{flex:1;overflow-y:auto;padding:28px;}
 
 /* Sidebar */
 .logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
-.logo-mark{font-family:var(--ff);font-size:17px;font-weight:700;color:var(--gold);letter-spacing:-.3px;}
-.logo-sub{font-size:9px;color:var(--ink3);letter-spacing:.9px;text-transform:uppercase;margin-top:1px;}
+.logo-mark{font-family:var(--ff);font-size:16px;font-weight:700;color:var(--gold);letter-spacing:-.3px;display:flex;align-items:center;gap:7px;}
+.logo-mark::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);}
+.logo-sub{font-size:9px;color:var(--ink3);letter-spacing:.9px;text-transform:uppercase;margin-top:2px;}
 .nav{flex:1;padding:10px 8px;overflow-y:auto;}
 .nav-section{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);padding:14px 10px 5px;font-weight:600;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--ink2);font-size:13px;font-weight:400;transition:all .13s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:var(--fb);}
-.nav-item:hover{background:var(--card);color:var(--ink);}
-.nav-item.active{background:var(--card2);color:var(--gold);font-weight:500;}
-.nav-badge{margin-left:auto;background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--ink3);font-size:12.5px;font-weight:400;transition:all .15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:var(--fb);}
+.nav-item:hover{background:rgba(0,201,122,.06);color:var(--ink);}
+.nav-item.active{background:rgba(0,201,122,.1);color:var(--gold);font-weight:500;border:1px solid rgba(0,201,122,.15);}
+.nav-badge{margin-left:auto;background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;}
 .user-area{padding:10px;border-top:1px solid var(--border);}
 .user-card{display:flex;align-items:center;gap:9px;padding:8px;border-radius:var(--r);cursor:pointer;transition:background .13s;}
-.user-card:hover{background:var(--card);}
-.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold-d),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;font-family:var(--fb);}
+.user-card:hover{background:rgba(0,201,122,.06);}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold-d),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;font-family:var(--fb);box-shadow:0 0 10px rgba(0,201,122,.3);}
 .avatar-lg{width:42px;height:42px;font-size:15px;}
 .user-name{font-size:12.5px;font-weight:500;color:var(--ink);line-height:1.2;}
-.user-role{font-size:10.5px;color:var(--ink3);}
+.user-role{font-size:10.5px;color:var(--ink3);text-transform:capitalize;}
 
 /* Cards */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;transition:border-color .15s;}
+.card:hover{border-color:var(--border2);}
 .card-title{font-family:var(--ff);font-size:14.5px;font-weight:600;color:var(--ink);}
 .card-sub{font-size:12px;color:var(--ink3);}
 
@@ -157,19 +159,19 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
 
 /* Stats */
-.stat-val{font-family:var(--ff);font-size:26px;font-weight:700;color:var(--ink);line-height:1;margin:10px 0 3px;}
+.stat-val{font-family:var(--fm);font-size:28px;font-weight:700;color:var(--ink);line-height:1;margin:10px 0 3px;letter-spacing:-0.03em;}
 .stat-label{font-size:11.5px;color:var(--ink3);}
 .stat-change{font-size:11px;font-family:var(--fm);margin-top:5px;}
-.stat-up{color:var(--green);}
+.stat-up{color:var(--gold);}
 .stat-down{color:var(--red);}
 
 /* Buttons */
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .13s;font-family:var(--fb);white-space:nowrap;}
-.btn-primary{background:var(--gold);color:#000;}
-.btn-primary:hover{background:var(--gold-l);}
-.btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:var(--fb);white-space:nowrap;}
+.btn-primary{background:var(--gold);color:#000;font-weight:600;}
+.btn-primary:hover{background:var(--gold-l);box-shadow:0 0 16px rgba(0,201,122,.3);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
 .btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--border2);}
-.btn-ghost:hover{background:var(--card2);color:var(--ink);}
+.btn-ghost:hover{background:rgba(0,201,122,.06);color:var(--ink);border-color:rgba(0,201,122,.2);}
 .btn-ghost:disabled{opacity:.45;cursor:not-allowed;}
 .btn-danger{background:transparent;color:var(--red);border:1px solid rgba(224,92,92,.25);}
 .btn-danger:hover{background:rgba(224,92,92,.08);}
@@ -177,8 +179,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 .btn-icon{padding:7px;width:32px;height:32px;justify-content:center;}
 
 /* Inputs */
-.input{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--ink);font-size:13px;font-family:var(--fb);outline:none;transition:border .13s;width:100%;}
-.input:focus{border-color:var(--gold);}
+.input{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--ink);font-size:13px;font-family:var(--fb);outline:none;transition:border .15s,box-shadow .15s;width:100%;}
+.input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(0,201,122,.08);}
 .input::placeholder{color:var(--ink3);}
 .input:disabled{opacity:.5;cursor:not-allowed;}
 .input-label{font-size:11.5px;color:var(--ink2);margin-bottom:5px;font-weight:500;}
@@ -190,20 +192,20 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 .table th{text-align:left;padding:9px 14px;font-size:10.5px;color:var(--ink3);font-weight:600;letter-spacing:.6px;text-transform:uppercase;border-bottom:1px solid var(--border);}
 .table td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:middle;}
 .table tr:last-child td{border-bottom:none;}
-.table tr:hover td{background:rgba(255,255,255,.018);}
+.table tr:hover td{background:rgba(0,201,122,.025);}
 
 /* Badges */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:500;}
 .badge-green{background:rgba(76,175,125,.14);color:var(--green);}
-.badge-gold{background:rgba(200,146,74,.14);color:var(--gold);}
+.badge-gold{background:rgba(0,201,122,.12);color:var(--gold);}
 .badge-red{background:rgba(224,92,92,.14);color:var(--red);}
 .badge-blue{background:rgba(92,155,224,.14);color:var(--blue);}
 .badge-purple{background:rgba(155,127,232,.14);color:var(--purple);}
 .badge-gray{background:rgba(168,164,156,.1);color:var(--ink3);}
 
 /* Drop zone */
-.drop-zone{border:2px dashed var(--border2);border-radius:var(--r2);padding:36px;text-align:center;cursor:pointer;transition:all .2s;}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:rgba(200,146,74,.04);}
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--r2);padding:40px;text-align:center;cursor:pointer;transition:all .2s;}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:rgba(0,201,122,.04);box-shadow:0 0 20px rgba(0,201,122,.06);}
 
 /* Progress */
 .progress{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
@@ -219,7 +221,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 @keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 
 /* Auth */
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(200,146,74,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(76,175,125,.04) 0%,transparent 50%);}
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(0,201,122,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,201,122,.04) 0%,transparent 50%);}
 .auth-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:38px;width:100%;max-width:400px;box-shadow:var(--shadow);}
 .auth-logo{font-family:var(--ff);font-size:24px;font-weight:700;color:var(--gold);margin-bottom:5px;}
 .auth-tagline{font-size:12.5px;color:var(--ink3);margin-bottom:28px;}
@@ -227,7 +229,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 .auth-tab{flex:1;padding:7px;border-radius:calc(var(--r) - 1px);text-align:center;font-size:13px;cursor:pointer;color:var(--ink3);transition:all .13s;border:none;background:none;font-family:var(--fb);}
 .auth-tab.active{background:var(--card);color:var(--ink);font-weight:500;}
 .auth-error{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.2);color:var(--red);padding:9px 12px;border-radius:var(--r);font-size:12px;margin-bottom:12px;}
-.auth-success{background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.2);color:var(--green);padding:9px 12px;border-radius:var(--r);font-size:12px;margin-bottom:12px;}
+.auth-success{background:rgba(0,201,122,.08);border:1px solid rgba(0,201,122,.2);color:var(--gold);padding:9px 12px;border-radius:var(--r);font-size:12px;margin-bottom:12px;}
 .auth-divider{text-align:center;color:var(--ink3);font-size:12px;margin:14px 0;position:relative;}
 .auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);}
 .auth-divider span{background:var(--card);padding:0 10px;position:relative;}
@@ -243,9 +245,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:14px;
 /* Toast */
 .toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:9999;}
 .toast{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:11px 15px;font-size:13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:9px;min-width:250px;animation:slideIn .2s ease;}
-.toast-success{border-left:3px solid var(--green);}
+.toast-success{border-left:3px solid var(--gold);}
 .toast-error{border-left:3px solid var(--red);}
-.toast-info{border-left:3px solid var(--gold);}
+.toast-info{border-left:3px solid var(--blue);}
 @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* Utils */
@@ -361,12 +363,12 @@ function Dashboard({ user, docs, setPage }) {
           <svg width="100%" height="56" viewBox="0 0 100 56" preserveAspectRatio="none">
             <defs>
               <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--green)" stopOpacity=".22"/>
-                <stop offset="100%" stopColor="var(--green)" stopOpacity="0"/>
+                <stop offset="0%" stopColor="var(--gold)" stopOpacity=".2"/>
+                <stop offset="100%" stopColor="var(--gold)" stopOpacity="0"/>
               </linearGradient>
             </defs>
             <polygon points={`0,56 ${balPts} 100,56`} fill="url(#balGrad)"/>
-            <polyline points={balPts} fill="none" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <polyline points={balPts} fill="none" stroke="var(--gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
 
@@ -467,7 +469,7 @@ function MarketPage() {
               <div className="card-title">BTC/USD Neural Analysis</div>
               <div style={{display:"flex",gap:6}}>
                 {["1D","1W","1M","3M"].map(p => (
-                  <button key={p} style={{padding:"4px 10px",borderRadius:"var(--r)",border:`1px solid ${p==="1M"?"var(--gold)":"var(--border)"}`,background:p==="1M"?"rgba(200,146,74,.1)":"transparent",color:p==="1M"?"var(--gold)":"var(--ink3)",fontSize:11,cursor:"pointer"}}>{p}</button>
+                  <button key={p} style={{padding:"4px 10px",borderRadius:"var(--r)",border:`1px solid ${p==="1M"?"var(--gold)":"var(--border)"}`,background:p==="1M"?"rgba(0,201,122,.1)":"transparent",color:p==="1M"?"var(--gold)":"var(--ink3)",fontSize:11,cursor:"pointer"}}>{p}</button>
                 ))}
               </div>
             </div>
@@ -710,7 +712,7 @@ function NotificationsPage() {
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setFilter(t.id)}
-            style={{padding:"7px 16px",borderRadius:99,border:`1px solid ${filter===t.id?"var(--gold)":"var(--border)"}`,background:filter===t.id?"rgba(200,146,74,.1)":"var(--surface)",color:filter===t.id?"var(--gold)":"var(--ink3)",fontSize:12.5,fontWeight:filter===t.id?600:400,cursor:"pointer",transition:"all .13s",fontFamily:"var(--fb)"}}>
+            style={{padding:"7px 16px",borderRadius:99,border:`1px solid ${filter===t.id?"var(--gold)":"var(--border)"}`,background:filter===t.id?"rgba(0,201,122,.1)":"var(--card2)",color:filter===t.id?"var(--gold)":"var(--ink3)",fontSize:12.5,fontWeight:filter===t.id?600:400,cursor:"pointer",transition:"all .13s",fontFamily:"var(--fb)"}}>
             {t.label}
           </button>
         ))}
@@ -785,7 +787,7 @@ function ReferralPage({ user, toast }) {
             <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
               {badges.map((b,i) => (
                 <div key={i} style={{flex:1,textAlign:"center"}}>
-                  <div style={{width:52,height:52,borderRadius:"50%",background:b.earned?"rgba(200,146,74,.15)":"var(--card2)",border:`2px solid ${b.earned?"var(--gold)":"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 8px"}}>
+                  <div style={{width:52,height:52,borderRadius:"50%",background:b.earned?"rgba(0,201,122,.15)":"var(--card2)",border:`2px solid ${b.earned?"var(--gold)":"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 8px"}}>
                     {b.icon}
                   </div>
                   <div style={{fontSize:10,color:b.earned?"var(--gold)":"var(--ink3)",fontWeight:b.earned?600:400,lineHeight:1.3}}>{b.label}</div>
@@ -906,7 +908,7 @@ function DocumentsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) 
           { id: "pending",  label: "Pending",  dot: "var(--gold)"  },
         ].map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)}
-            style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:99, fontSize:12, fontWeight:filter===f.id?600:400, cursor:"pointer", border:`1px solid ${filter===f.id?"var(--gold)":"var(--border)"}`, background:filter===f.id?"rgba(200,146,74,.1)":"var(--surface)", color:filter===f.id?"var(--gold)":"var(--ink3)", transition:"all .13s" }}>
+            style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:99, fontSize:12, fontWeight:filter===f.id?600:400, cursor:"pointer", border:`1px solid ${filter===f.id?"var(--gold)":"var(--border)"}`, background:filter===f.id?"rgba(0,201,122,.1)":"var(--card2)", color:filter===f.id?"var(--gold)":"var(--ink3)", transition:"all .13s" }}>
             <span style={{ width:6, height:6, borderRadius:"50%", background:f.dot, flexShrink:0, opacity:filter===f.id?1:.5 }} />
             {f.label}
           </button>
@@ -1040,8 +1042,8 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
   const renderText = (text) => {
     const lines = text.split("\n");
     return lines.map((line, i) => {
-      if (line.startsWith("## ")) return <div key={i} style={{ fontFamily: "var(--fs)", fontWeight: 600, fontSize: 13.5, color: "var(--gold)", margin: "12px 0 4px" }}>{line.slice(3)}</div>;
-      if (line.startsWith("# "))  return <div key={i} style={{ fontFamily: "var(--fs)", fontWeight: 700, fontSize: 15, color: "var(--ink)", margin: "14px 0 6px" }}>{line.slice(2)}</div>;
+      if (line.startsWith("## ")) return <div key={i} style={{ fontFamily: "var(--ff)", fontWeight: 600, fontSize: 13.5, color: "var(--gold)", margin: "12px 0 4px" }}>{line.slice(3)}</div>;
+      if (line.startsWith("# "))  return <div key={i} style={{ fontFamily: "var(--ff)", fontWeight: 700, fontSize: 15, color: "var(--ink)", margin: "14px 0 6px" }}>{line.slice(2)}</div>;
       if (line.match(/^\*\*(.+)\*\*$/)) return <div key={i} style={{ fontWeight: 600, color: "var(--ink)", fontSize: 12.5, marginTop: 8 }}>{line.replace(/\*\*/g,"")}</div>;
       if (line.startsWith("- ") || line.startsWith("* ")) return <div key={i} style={{ paddingLeft: 14, fontSize: 12.5, color: "var(--ink2)", lineHeight: 1.7, position:"relative" }}><span style={{ position:"absolute", left:4, color:"var(--gold)" }}>·</span>{line.slice(2).replace(/\*\*/g,"")}</div>;
       if (line.match(/^\d+\./)) return <div key={i} style={{ paddingLeft: 14, fontSize: 12.5, color: "var(--ink2)", lineHeight: 1.7 }}>{line.replace(/\*\*/g,"")}</div>;
@@ -1083,7 +1085,7 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
             <div className="card-title mb-2" style={{ fontSize: 11.5 }}>ANALYSIS MODE</div>
             {MODES.map(m => (
               <button key={m.id} onClick={() => setMode(m.id)}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: "var(--r)", border: `1px solid ${mode===m.id?"var(--gold)":"var(--border)"}`, background: mode===m.id?"rgba(200,146,74,.07)":"transparent", cursor: "pointer", width: "100%", marginBottom: 5, transition: "all .13s" }}>
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: "var(--r)", border: `1px solid ${mode===m.id?"var(--gold)":"var(--border)"}`, background: mode===m.id?"rgba(0,201,122,.07)":"transparent", cursor: "pointer", width: "100%", marginBottom: 5, transition: "all .13s" }}>
                 <IC n={m.icon} s={12} c={mode===m.id ? m.color : "var(--ink3)"} />
                 <span style={{ fontSize: 12, color: mode===m.id?"var(--gold)":"var(--ink2)", fontWeight: mode===m.id?500:400, fontFamily:"var(--fb)" }}>{m.label}</span>
               </button>
@@ -1121,17 +1123,17 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
                 <div style={{ position: "relative", width: 80, height: 80 }}>
                   <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                     <circle cx="40" cy="40" r="38" stroke="var(--border)" strokeWidth="1.5" />
-                    <circle cx="40" cy="40" r="28" stroke="rgba(200,146,74,.25)" strokeWidth="1" strokeDasharray="4 4" />
+                    <circle cx="40" cy="40" r="28" stroke="rgba(0,201,122,.25)" strokeWidth="1" strokeDasharray="4 4" />
                     {/* Nodes */}
                     {[[40,14],[66,30],[66,50],[40,66],[14,50],[14,30]].map(([cx,cy],i) => (
-                      <circle key={i} cx={cx} cy={cy} r="4" fill="var(--surface)" stroke="rgba(200,146,74,.6)" strokeWidth="1.5" />
+                      <circle key={i} cx={cx} cy={cy} r="4" fill="var(--card2)" stroke="rgba(0,201,122,.6)" strokeWidth="1.5" />
                     ))}
                     {/* Connections */}
                     {[[40,14,66,30],[66,30,66,50],[66,50,40,66],[40,66,14,50],[14,50,14,30],[14,30,40,14],[40,14,40,66],[66,30,14,50],[66,50,14,30]].map(([x1,y1,x2,y2],i) => (
-                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(200,146,74,.12)" strokeWidth="1" />
+                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,201,122,.12)" strokeWidth="1" />
                     ))}
                     {/* Center dot */}
-                    <circle cx="40" cy="40" r="6" fill="rgba(200,146,74,.15)" stroke="var(--gold)" strokeWidth="1.5" />
+                    <circle cx="40" cy="40" r="6" fill="rgba(0,201,122,.15)" stroke="var(--gold)" strokeWidth="1.5" />
                     <circle cx="40" cy="40" r="2.5" fill="var(--gold)" />
                   </svg>
                 </div>
@@ -1169,8 +1171,8 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
                   maxWidth: "88%",
                   padding: msg.role === "user" ? "9px 14px" : "13px 16px",
                   borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px",
-                  background: msg.role === "user" ? "rgba(200,146,74,.12)" : "var(--surface)",
-                  border: `1px solid ${msg.role === "user" ? "rgba(200,146,74,.2)" : "var(--border)"}`,
+                  background: msg.role === "user" ? "rgba(0,201,122,.12)" : "var(--card2)",
+                  border: `1px solid ${msg.role === "user" ? "rgba(0,201,122,.2)" : "var(--border)"}`,
                   fontSize: 12.5,
                   lineHeight: 1.7,
                   color: "var(--ink2)",
@@ -1190,17 +1192,17 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20 }}>
                 {/* Pulsing neural globe */}
                 <div style={{ position: "relative", width: 96, height: 96 }}>
-                  <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "rgba(200,146,74,.06)", animation: "pulse 1.6s ease infinite" }} />
+                  <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "rgba(0,201,122,.06)", animation: "pulse 1.6s ease infinite" }} />
                   <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
-                    <circle cx="48" cy="48" r="46" stroke="rgba(200,146,74,.15)" strokeWidth="1.5" />
-                    <circle cx="48" cy="48" r="34" stroke="rgba(200,146,74,.25)" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="48" cy="48" r="46" stroke="rgba(0,201,122,.15)" strokeWidth="1.5" />
+                    <circle cx="48" cy="48" r="34" stroke="rgba(0,201,122,.25)" strokeWidth="1" strokeDasharray="3 3" />
                     {[[48,16],[80,35],[80,61],[48,80],[16,61],[16,35]].map(([cx,cy],i) => (
-                      <circle key={i} cx={cx} cy={cy} r="4.5" fill="var(--surface)" stroke="rgba(200,146,74,.7)" strokeWidth="1.5" />
+                      <circle key={i} cx={cx} cy={cy} r="4.5" fill="var(--card2)" stroke="rgba(0,201,122,.7)" strokeWidth="1.5" />
                     ))}
                     {[[48,16,80,35],[80,35,80,61],[80,61,48,80],[48,80,16,61],[16,61,16,35],[16,35,48,16],[48,16,48,80],[80,35,16,61],[80,61,16,35]].map(([x1,y1,x2,y2],i) => (
-                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(200,146,74,.15)" strokeWidth="1" />
+                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,201,122,.15)" strokeWidth="1" />
                     ))}
-                    <circle cx="48" cy="48" r="8" fill="rgba(200,146,74,.2)" stroke="var(--gold)" strokeWidth="1.5" />
+                    <circle cx="48" cy="48" r="8" fill="rgba(0,201,122,.2)" stroke="var(--gold)" strokeWidth="1.5" />
                     <circle cx="48" cy="48" r="3" fill="var(--gold)" />
                   </svg>
                 </div>
@@ -1222,7 +1224,7 @@ function AnalyzePage({ user, docs, setDocs, toast, selectedDoc, setSelectedDoc }
             )}
             {loading && chat.filter(m => m.isAnalysis).length > 0 && (
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div style={{ padding: "12px 16px", borderRadius: "4px 14px 14px 14px", background: "var(--surface)", border: "1px solid var(--border)" }}>
+                <div style={{ padding: "12px 16px", borderRadius: "4px 14px 14px 14px", background: "var(--card2)", border: "1px solid var(--border)" }}>
                   <div className="dot-pulse"><span/><span/><span/></div>
                 </div>
               </div>
@@ -1277,7 +1279,7 @@ function ReportsPage({ user, docs, toast }) {
   const analyzed = selectedDocs.filter(d => d.status === "analyzed");
 
   const TYPES = [
-    { id: "monthly", label: "Monthly Close Report",  desc: "AI-generated financial reports — calendar and comparative.", icon: "report", color: "#C8924A" },
+    { id: "monthly", label: "Monthly Close Report",  desc: "AI-generated financial reports — calendar and comparative.", icon: "report", color: "#00C97A" },
     { id: "risk",    label: "Risk Assessment",        desc: "AI-generates financial reports — risk level, readiness.",    icon: "alert",  color: "#E05C5C" },
     { id: "audit",   label: "Audit Readiness",        desc: "AI-generates financial reports — audit readiness.",           icon: "docs",   color: "#4CAF7D" },
   ];
@@ -1319,13 +1321,13 @@ function ReportsPage({ user, docs, toast }) {
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'DM Sans',Helvetica,Arial,sans-serif;background:#fff;color:#1a1a1a;font-size:11pt;line-height:1.7;}
   .cover{background:linear-gradient(135deg,#0C0E0D 0%,#1a1f1c 100%);padding:60px 56px;min-height:220px;position:relative;}
-  .cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C8924A,#E2A85C,#C8924A);}
-  .logo{font-family:'Fraunces',Georgia,serif;font-size:22pt;font-weight:700;color:#C8924A;letter-spacing:-.5px;margin-bottom:6px;}
+  .cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00C97A,#33E895,#00C97A);}
+  .logo{font-family:'Fraunces',Georgia,serif;font-size:22pt;font-weight:700;color:#00C97A;letter-spacing:-.5px;margin-bottom:6px;}
   .logo-sub{font-size:9pt;color:#6B6760;letter-spacing:1px;text-transform:uppercase;margin-bottom:36px;}
   .report-title{font-family:'Fraunces',Georgia,serif;font-size:26pt;font-weight:700;color:#E8E4DC;line-height:1.2;margin-bottom:10px;}
   .report-meta{font-size:10pt;color:#A8A49C;}
   .body{padding:48px 56px;}
-  h1{font-family:'Fraunces',Georgia,serif;font-size:16pt;font-weight:700;color:#0C0E0D;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #C8924A;}
+  h1{font-family:'Fraunces',Georgia,serif;font-size:16pt;font-weight:700;color:#0C0E0D;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #00C97A;}
   h2{font-family:'Fraunces',Georgia,serif;font-size:13pt;font-weight:600;color:#1a1a1a;margin:20px 0 8px;}
   h3{font-size:11pt;font-weight:600;color:#3a3a3a;margin:14px 0 6px;}
   p{margin-bottom:8px;color:#2a2a2a;}
@@ -1335,7 +1337,7 @@ function ReportsPage({ user, docs, toast }) {
   .risk-high{color:#E67E22;font-weight:600;}
   .risk-medium{color:#C8924A;font-weight:600;}
   .risk-low{color:#27AE60;font-weight:600;}
-  .highlight{background:#FFF8F0;border-left:3px solid #C8924A;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;}
+  .highlight{background:#F5FFF9;border-left:3px solid #00C97A;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;}
   .footer{margin-top:48px;padding-top:16px;border-top:1px solid #E0D8D0;display:flex;justify-content:space-between;font-size:9pt;color:#A8A49C;}
   .page-num{text-align:right;}
   table{width:100%;border-collapse:collapse;margin:12px 0;}
@@ -1401,7 +1403,7 @@ ${lines.map(line => {
     const wordHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
 <head><meta charset='UTF-8'><title>${t.label}</title>
 <style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6;margin:2cm;}
-h1{font-size:16pt;color:#C8924A;border-bottom:2px solid #C8924A;padding-bottom:4pt;}
+h1{font-size:16pt;color:#00C97A;border-bottom:2px solid #00C97A;padding-bottom:4pt;}
 h2{font-size:13pt;color:#1a1a1a;}p{margin:6pt 0;}</style></head>
 <body>
 <h1 style="font-size:20pt;color:#0C0E0D;">ExFinAnalyze — ${t.label}</h1>
@@ -1464,8 +1466,9 @@ ${output.split("\n").map(l => {
             <div className="progress mb-2"><div className="progress-bar" style={{ width: `${selectedDocs.length?analyzed.length/selectedDocs.length*100:0}%` }} /></div>
           </div>
 
-          <button className="btn btn-primary" onClick={generate} disabled={busy||analyzed.length===0} style={{ justifyContent: "center", width: "100%", padding: "11px" }}>
-            {busy ? <><span className="spin">↻</span> Generating...</> : <><IC n="report" s={14} /> Generate Report</>}
+          <button className="btn btn-primary" onClick={generate} disabled={busy||analyzed.length===0}
+            style={{ justifyContent: "center", width: "100%", padding: "13px", fontSize: 13.5, fontWeight: 700, boxShadow: analyzed.length>0&&!busy?"0 0 20px rgba(0,201,122,.25)":"none", letterSpacing:"0.02em" }}>
+            {busy ? <><span className="spin">↻</span> Generating...</> : <><IC n="report" s={15} /> Generate Report</>}
           </button>
 
           {pdfUrl && (
@@ -1587,7 +1590,7 @@ function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
 
   const createProject = () => {
     if (!newName.trim()) return;
-    const colors = ["#C8924A","#4CAF7D","#5C9BE0","#A06BB8","#E05C5C"];
+    const colors = ["#00C97A","#5C9BE0","#9B7FE8","#4CAF7D","#E05C5C"];
     const p = {
       id: `proj-${Date.now()}`,
       name: newName.trim(),
@@ -1656,7 +1659,7 @@ function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
                     ? <div style={{ fontSize:12, color:"var(--ink3)" }}>No documents — upload from Documents page first</div>
                     : docs.map(d => (
                       <div key={d.id} onClick={() => toggleDoc(p.id, d.id)}
-                        style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:"var(--r)", border:`1px solid ${p.docIds.includes(d.id)?"var(--gold)":"var(--border)"}`, background:p.docIds.includes(d.id)?"rgba(200,146,74,.07)":"transparent", cursor:"pointer", marginBottom:6, transition:"all .13s" }}>
+                        style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:"var(--r)", border:`1px solid ${p.docIds.includes(d.id)?"var(--gold)":"var(--border)"}`, background:p.docIds.includes(d.id)?"rgba(0,201,122,.07)":"transparent", cursor:"pointer", marginBottom:6, transition:"all .13s" }}>
                         <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${p.docIds.includes(d.id)?"var(--gold)":"var(--border2)"}`, background:p.docIds.includes(d.id)?"var(--gold)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           {p.docIds.includes(d.id) && <span style={{ fontSize:9, color:"#000", fontWeight:700 }}>✓</span>}
                         </div>
@@ -1680,7 +1683,7 @@ function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
 
               {!addingDocs && pDocs.map(d => (
                 <div key={d.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:"var(--r)", border:"1px solid var(--border)", marginBottom:6 }}>
-                  <div style={{ width:28, height:28, borderRadius:5, background:"rgba(200,146,74,.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <div style={{ width:28, height:28, borderRadius:5, background:"rgba(0,201,122,.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <IC n={d.type==="excel"?"excel":d.type==="contract"?"contract":"pdf"} s={12} c="var(--gold)" />
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
@@ -1736,7 +1739,7 @@ function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
       </div>
 
       {showNew && (
-        <div className="card mb-4" style={{ borderColor:"rgba(200,146,74,.3)", marginBottom:16 }}>
+        <div className="card mb-4" style={{ borderColor:"rgba(0,201,122,.3)", marginBottom:16 }}>
           <div className="card-title mb-3">New Project</div>
           <div className="input-group">
             <div className="input-label">Project Name *</div>
@@ -1779,7 +1782,7 @@ function ProjectsPage({ user, docs, setDocs, toast, setPage, setSelectedDoc }) {
                   </div>
                   <span style={{ fontSize:10.5, color:"var(--ink3)" }}>{new Date(p.createdAt).toLocaleDateString()}</span>
                 </div>
-                <div style={{ fontFamily:"var(--fs)", fontSize:14, fontWeight:600, color:"var(--ink)", marginBottom:4 }}>{p.name}</div>
+                <div style={{ fontFamily:"var(--ff)", fontSize:14, fontWeight:600, color:"var(--ink)", marginBottom:4 }}>{p.name}</div>
                 {p.desc && <div style={{ fontSize:12, color:"var(--ink3)", marginBottom:12, lineHeight:1.5 }}>{p.desc}</div>}
                 <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                   <span className="badge" style={{ background:`${p.color}15`, color:p.color, borderColor:`${p.color}30`, fontSize:10.5 }}>{pDocs.length} docs</span>
@@ -1988,7 +1991,7 @@ function IncentivePage() {
           <div style={{ display:"flex", gap:0, marginBottom:18, border:"1px solid var(--border)", borderRadius:"var(--r)", overflow:"hidden", width:"fit-content" }}>
             {DEPTS.map((d, i) => (
               <button key={d.id} onClick={() => { setDeptId(d.id); setResult(null); }}
-                style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 20px", border:"none", borderRight:i<DEPTS.length-1?"1px solid var(--border)":"none", background:deptId===d.id?"rgba(200,146,74,.1)":"var(--surface)", color:deptId===d.id?"var(--gold)":"var(--ink3)", cursor:"pointer", fontFamily:"var(--fb)", fontSize:13, fontWeight:deptId===d.id?600:400, transition:"all .13s" }}>
+                style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 20px", border:"none", borderRight:i<DEPTS.length-1?"1px solid var(--border)":"none", background:deptId===d.id?"rgba(0,201,122,.1)":"var(--card2)", color:deptId===d.id?"var(--gold)":"var(--ink3)", cursor:"pointer", fontFamily:"var(--fb)", fontSize:13, fontWeight:deptId===d.id?600:400, transition:"all .13s" }}>
                 <IC n={d.icon} s={12} c={deptId===d.id?"var(--gold)":"var(--ink3)"} />
                 {d.label}
               </button>
@@ -2041,12 +2044,21 @@ function IncentivePage() {
               )}
               {result && result.valid && (
                 <>
-                  {/* Status badge */}
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                    <span style={{ padding:"5px 12px", borderRadius:99, fontSize:12, fontWeight:600, background:result.qualified?"rgba(76,175,125,.12)":"rgba(224,92,92,.1)", color:result.qualified?"var(--green)":"var(--red)", border:`1px solid ${result.qualified?"rgba(76,175,125,.25)":"rgba(224,92,92,.2)"}` }}>
-                      {result.qualified ? "✓ Qualified" : "✗ Not Qualified"}
-                    </span>
-                    <span style={{ fontSize:11.5, color:"var(--ink3)" }}>{result.mo} months served</span>
+                  {/* Hero incentive number */}
+                  <div style={{ textAlign:"center", padding:"20px 0 16px", borderBottom:"1px solid var(--border)", marginBottom:16 }}>
+                    <div style={{ fontSize:11, color:"var(--ink3)", letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Incentive</div>
+                    <div style={{ fontFamily:"var(--fm)", fontSize:42, fontWeight:700, color: result.qualified ? "var(--gold)" : "var(--red)", letterSpacing:"-0.02em", lineHeight:1 }}>
+                      {result.qualified ? `$${fmtN(result.final)}` : "$0.00"}
+                    </div>
+                    <div style={{ fontSize:12, color:"var(--ink3)", marginTop:6 }}>
+                      {result.qualified ? "Calculated in Payout" : "Not Qualified"}
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginTop:10 }}>
+                      <span style={{ padding:"4px 12px", borderRadius:99, fontSize:11.5, fontWeight:600, background:result.qualified?"rgba(76,175,125,.12)":"rgba(224,92,92,.1)", color:result.qualified?"var(--green)":"var(--red)", border:`1px solid ${result.qualified?"rgba(76,175,125,.25)":"rgba(224,92,92,.2)"}` }}>
+                        {result.qualified ? "✓ Qualified" : "✗ Not Qualified"}
+                      </span>
+                      <span style={{ fontSize:11.5, color:"var(--ink3)" }}>{result.mo} months served</span>
+                    </div>
                   </div>
 
                   {!result.qualified && (
@@ -2056,16 +2068,16 @@ function IncentivePage() {
                   )}
 
                   {/* Metrics grid */}
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
                     {[
                       { label:"Achievement %", val: fmtP(result.achv), color: result.qualified ? tierColor(result.achv) : "var(--red)" },
                       { label:"Payout Rate",   val: result.qualified ? fmtP(result.payout) : "0%", color: result.qualified ? "var(--blue)" : "var(--ink3)" },
                       { label:"Base Incentive", val: fmtN(result.base), color: "var(--ink)" },
-                      { label:"Final Incentive", val: result.qualified ? fmtN(result.final) : "0.00", color: result.qualified ? "var(--green)" : "var(--ink3)" },
+                      { label:"Months Served",  val: `${result.mo} / 7`, color: "var(--ink2)" },
                     ].map((m, i) => (
-                      <div key={i} style={{ background:"var(--card2)", borderRadius:"var(--r)", padding:"12px 14px", border:"1px solid var(--border2)" }}>
-                        <div style={{ fontSize:11, color:"var(--ink3)", marginBottom:4 }}>{m.label}</div>
-                        <div style={{ fontSize:18, fontWeight:600, color:m.color, fontFamily:"var(--fm)" }}>{m.val}</div>
+                      <div key={i} style={{ background:"var(--card2)", borderRadius:"var(--r)", padding:"10px 12px", border:"1px solid var(--border2)" }}>
+                        <div style={{ fontSize:10.5, color:"var(--ink3)", marginBottom:3 }}>{m.label}</div>
+                        <div style={{ fontSize:16, fontWeight:600, color:m.color, fontFamily:"var(--fm)" }}>{m.val}</div>
                       </div>
                     ))}
                   </div>
@@ -2269,7 +2281,7 @@ export default function App() {
 
   if (loading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)", color: "var(--ink3)", fontFamily: "var(--fb)" }}>
-      <span className="spin" style={{ marginRight: 10, fontSize: 18 }}>↻</span> Loading...
+      <span className="spin" style={{ marginRight: 10, fontSize: 18, color: "var(--gold)" }}>↻</span><span style={{color:"var(--ink3)",fontFamily:"var(--fb)"}}>Loading...</span>
     </div>
   );
 
@@ -2315,7 +2327,7 @@ export default function App() {
   return (
     <div className="app">
       {/* CSS custom props bootstrap */}
-      <style>{`:root{--bg:#0C0E0D;}`}</style>
+      <style>{`:root{--bg:#09110D;}`}</style>
 
       {/* Sidebar */}
       <aside className="sidebar">
@@ -2358,7 +2370,7 @@ export default function App() {
           <div style={{ flex: 1, fontFamily: "var(--ff)", fontSize: 14, fontWeight: 600, color: "var(--ink)", textTransform: "capitalize" }}>{page}</div>
           <div className="flex items-center gap-3">
             {import.meta.env.VITE_GEMINI_API_KEY
-              ? <span className="badge badge-green"><IC n="check" s={9} c="var(--green)" /> Gemini Active</span>
+              ? <span className="badge badge-gold"><IC n="check" s={9} c="var(--gold)" /> Gemini Active</span>
               : <span className="badge badge-red"><IC n="alert" s={9} c="var(--red)" /> API Key Missing</span>
             }
             <div className="avatar" style={{ width: 26, height: 26, fontSize: 10, cursor: "pointer" }} onClick={() => setPage("settings")}>{initials}</div>
