@@ -447,85 +447,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 24/7 AI CONCIERGE */}
-      <section style={{ padding: "80px 40px", background: BG }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 14px", background: `rgba(0,201,122,.08)`, borderRadius: 20, marginBottom: 18, border: `1px solid rgba(0,201,122,.2)` }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN, boxShadow: `0 0 6px ${GREEN}` }} />
-              <span style={{ fontSize: 11, color: GREEN, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>ExFinAnalyze AI</span>
-            </div>
-            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(28px,4vw,46px)", fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.1, color: INK, marginBottom: 12 }}>
-              24/7 AI Concierge
-            </h2>
-            <p style={{ fontSize: 15, color: INK2, maxWidth: 480, margin: "0 auto" }}>
-              Your personal AI financial analyst — always available, always accurate.
-            </p>
-          </div>
-
-          {/* Chat demo */}
-          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 16px 56px rgba(0,0,0,.45)" }}>
-            {/* Chat header */}
-            <div style={{ padding: "14px 20px", borderBottom: `1px solid ${BORDER}`, display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: `rgba(0,201,122,.15)`, border: `1px solid rgba(0,201,122,.3)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🤖</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: INK, fontFamily: "'DM Sans', sans-serif" }}>ExFinAnalyze AI</div>
-                <div style={{ fontSize: 11, color: GREEN, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: GREEN, display: "inline-block", boxShadow: `0 0 4px ${GREEN}` }} /> Online
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 16, minHeight: 260 }}>
-              {/* AI opening */}
-              <div style={{ display: "flex", gap: 10, maxWidth: "80%" }}>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: `rgba(0,201,122,.15)`, border: `1px solid rgba(0,201,122,.25)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0, marginTop: 2 }}>🤖</div>
-                <div style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: "2px 12px 12px 12px", padding: "10px 14px" }}>
-                  <p style={{ fontSize: 13, color: INK2, margin: 0, lineHeight: 1.6 }}>Hello! I'm your personal financial analyst. How can I assist you today?</p>
-                </div>
-              </div>
-              {/* User message */}
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <div style={{ background: `rgba(0,201,122,.12)`, border: `1px solid rgba(0,201,122,.25)`, borderRadius: "12px 2px 12px 12px", padding: "10px 14px", maxWidth: "72%" }}>
-                  <p style={{ fontSize: 13, color: INK, margin: 0, lineHeight: 1.6 }}>Can you give me an update on my sustainable tech portfolio?</p>
-                </div>
-              </div>
-              {/* AI response */}
-              <div style={{ display: "flex", gap: 10, maxWidth: "85%" }}>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: `rgba(0,201,122,.15)`, border: `1px solid rgba(0,201,122,.25)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0, marginTop: 2 }}>🤖</div>
-                <div style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: "2px 12px 12px 12px", padding: "10px 14px" }}>
-                  <p style={{ fontSize: 13, color: INK2, margin: 0, lineHeight: 1.6 }}>Certainly! Based on real-time data, your green tech investments are performing strongly. Would you like a detailed breakdown or a market forecast?</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick action chips */}
-            <div style={{ padding: "0 20px 16px", display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {["Analyze my portfolio", "Explain market trends", "Review tax optimization", "Suggest green investments"].map((q, i) => (
-                <button key={i} style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${BORDER2}`, borderRadius: 99, fontSize: 12, color: INK2, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all .15s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = `rgba(0,201,122,.4)`; e.currentTarget.style.color = GREEN; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER2; e.currentTarget.style.color = INK2; }}>
-                  {q}
-                </button>
-              ))}
-            </div>
-
-            {/* Input bar */}
-            <div style={{ padding: "12px 20px", borderTop: `1px solid ${BORDER}`, display: "flex", gap: 10 }}>
-              <div style={{ flex: 1, padding: "10px 14px", background: SURF, border: `1px solid ${BORDER2}`, borderRadius: 8, fontSize: 13, color: INK3, fontFamily: "'DM Sans', sans-serif" }}>
-                Ask me anything...
-              </div>
-              <button style={{ padding: "10px 18px", background: GREEN, color: "#000", border: "none", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all .15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = GREEN_L; e.currentTarget.style.boxShadow = `0 0 16px rgba(0,201,122,.35)`; }}
-                onMouseLeave={e => { e.currentTarget.style.background = GREEN; e.currentTarget.style.boxShadow = "none"; }}>
-                Send ↗
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* TRUST & TESTIMONIALS */}
       <section style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
@@ -691,7 +612,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer style={{ background: SURF, padding: "60px 40px 28px", borderTop: `1px solid ${BORDER}` }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.8fr", gap: 40, paddingBottom: 48, borderBottom: `1px solid ${BORDER}`, marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 40, paddingBottom: 48, borderBottom: `1px solid ${BORDER}`, marginBottom: 28 }}>
             {/* Brand */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
@@ -718,40 +639,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-            {/* Newsletter */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: INK3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Newsletter</div>
-              <p style={{ fontSize: 12.5, color: INK3, lineHeight: 1.6, marginBottom: 14 }}>
-                Weekly AI finance insights — no spam.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  style={{
-                    width: "100%", padding: "9px 12px",
-                    background: CARD, border: `1px solid ${BORDER2}`,
-                    borderRadius: 6, color: INK, fontSize: 12.5,
-                    fontFamily: "'DM Sans', sans-serif", outline: "none",
-                    transition: "border-color .15s",
-                  }}
-                  onFocus={e => { e.target.style.borderColor = `rgba(0,201,122,.5)`; }}
-                  onBlur={e => { e.target.style.borderColor = BORDER2; }}
-                />
-                <button
-                  style={{
-                    width: "100%", padding: "9px", background: GREEN,
-                    color: "#000", border: "none", borderRadius: 6,
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                    fontSize: 12.5, cursor: "pointer", transition: "all .2s",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = GREEN_L; e.currentTarget.style.boxShadow = `0 0 14px rgba(0,201,122,.3)`; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = GREEN; e.currentTarget.style.boxShadow = "none"; }}
-                >
-                  Subscribe
-                </button>
-              </div>
-            </div>
           </div>
           {/* Bottom */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
