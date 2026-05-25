@@ -400,14 +400,20 @@ export default function LandingPage() {
           <div className="lp-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, maxWidth: 880, margin: "0 auto" }}>
             {FEATURES.map(({ icon, title, body }, i) => (
               <div key={i} className="lp-feat-card" style={{
-                padding: 28, border: `1px solid ${BORDER}`, borderRadius: 10,
-                background: CARD, cursor: "default",
+                padding: "32px 28px", border: `1px solid ${BORDER}`, borderRadius: 12,
+                background: CARD, cursor: "default", position: "relative", overflow: "hidden",
               }}>
-                <div style={{ width: 44, height: 44, borderRadius: 8, background: `rgba(0,201,122,.08)`, border: `1px solid rgba(0,201,122,.15)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                  {icon}
+                {/* Radial glow in top-right corner */}
+                <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: `radial-gradient(circle, rgba(0,201,122,.12) 0%, transparent 70%)`, pointerEvents: "none" }} />
+                {/* Faint corner accent */}
+                <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, background: `linear-gradient(225deg, rgba(0,201,122,.06) 0%, transparent 60%)`, borderRadius: "0 12px 0 0", pointerEvents: "none" }} />
+                <div style={{ position: "relative" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 10, background: `rgba(0,201,122,.1)`, border: `1px solid rgba(0,201,122,.2)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, boxShadow: `0 0 16px rgba(0,201,122,.1)` }}>
+                    {icon}
+                  </div>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 500, marginBottom: 10, color: INK }}>{title}</div>
+                  <div style={{ fontSize: 14, color: INK2, lineHeight: 1.7 }}>{body}</div>
                 </div>
-                <div style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 500, marginBottom: 10, color: INK }}>{title}</div>
-                <div style={{ fontSize: 14, color: INK2, lineHeight: 1.65 }}>{body}</div>
               </div>
             ))}
           </div>
@@ -429,11 +435,12 @@ export default function LandingPage() {
               ["02", "AI Analyzes", "Our neural models extract key metrics, detect risks, identify opportunities, and generate predictive insights in real time.", "🧠"],
               ["03", "Act with Confidence", "Receive actionable recommendations, automated reports, and portfolio optimizations — all backed by cutting-edge AI.", "⚡"],
             ].map(([num, title, body, emoji]) => (
-              <div key={num} style={{ padding: 28, border: `1px solid ${BORDER}`, borderRadius: 10, background: CARD, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: 14, right: 16, fontSize: 32, opacity: .12 }}>{emoji}</div>
-                <div style={{ fontSize: 11, color: GREEN, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", marginBottom: 12, letterSpacing: "0.1em" }}>{num}</div>
+              <div key={num} style={{ padding: "30px 26px", border: `1px solid ${BORDER}`, borderRadius: 12, background: CARD, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle, rgba(0,201,122,.09) 0%, transparent 70%)`, pointerEvents: "none" }} />
+                <div style={{ position: "absolute", top: 14, right: 16, fontSize: 28, opacity: .08 }}>{emoji}</div>
+                <div style={{ fontSize: 11, color: GREEN, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", marginBottom: 14, letterSpacing: "0.12em" }}>{num}</div>
                 <div style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 500, marginBottom: 10, color: INK }}>{title}</div>
-                <div style={{ fontSize: 14, color: INK2, lineHeight: 1.65 }}>{body}</div>
+                <div style={{ fontSize: 13.5, color: INK2, lineHeight: 1.7 }}>{body}</div>
               </div>
             ))}
           </div>
@@ -684,7 +691,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer style={{ background: SURF, padding: "60px 40px 28px", borderTop: `1px solid ${BORDER}` }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: 40, paddingBottom: 48, borderBottom: `1px solid ${BORDER}`, marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.8fr", gap: 40, paddingBottom: 48, borderBottom: `1px solid ${BORDER}`, marginBottom: 28 }}>
             {/* Brand */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
@@ -695,7 +702,7 @@ export default function LandingPage() {
                 AI-powered financial intelligence for the next generation of investors and institutions.
               </p>
             </div>
-            {/* Columns */}
+            {/* Link columns */}
             {[
               { heading: "Product",   links: ["Features","Pricing","API","Blog"] },
               { heading: "Solutions", links: ["SMB","Personal","Enterprise"] },
@@ -711,6 +718,40 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+            {/* Newsletter */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: INK3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Newsletter</div>
+              <p style={{ fontSize: 12.5, color: INK3, lineHeight: 1.6, marginBottom: 14 }}>
+                Weekly AI finance insights — no spam.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  style={{
+                    width: "100%", padding: "9px 12px",
+                    background: CARD, border: `1px solid ${BORDER2}`,
+                    borderRadius: 6, color: INK, fontSize: 12.5,
+                    fontFamily: "'DM Sans', sans-serif", outline: "none",
+                    transition: "border-color .15s",
+                  }}
+                  onFocus={e => { e.target.style.borderColor = `rgba(0,201,122,.5)`; }}
+                  onBlur={e => { e.target.style.borderColor = BORDER2; }}
+                />
+                <button
+                  style={{
+                    width: "100%", padding: "9px", background: GREEN,
+                    color: "#000", border: "none", borderRadius: 6,
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                    fontSize: 12.5, cursor: "pointer", transition: "all .2s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = GREEN_L; e.currentTarget.style.boxShadow = `0 0 14px rgba(0,201,122,.3)`; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = GREEN; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  Subscribe
+                </button>
+              </div>
+            </div>
           </div>
           {/* Bottom */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
